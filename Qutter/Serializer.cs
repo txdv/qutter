@@ -66,6 +66,13 @@ namespace Qutter
       }
     }
     
+    private static readonly IDictionary<string, Type> userDefined = new Dictionary<string, Type>();
+    
+    public static void RegisterUserDefinedMetaType(string typeName, Type metaTypeSerializer)
+    {
+      userDefined[typeName] = metaTypeSerializer;
+    }
+    
     static QTypeManager()
     {
       // non generic values
@@ -122,6 +129,19 @@ namespace Qutter
       return GetMetaTypeSerializer(type).GetConstructor(new Type[] { }).Invoke(new object[] { });
     }
     
+    internal static Type GetMetaTypeSerializer(string name)
+    {
+      if (!userDefined.ContainsKey(name))
+        return null;
+      
+      return userDefined[name];
+    }
+    
+    internal static object GetMetaTypeSerializerInstance(string name)
+    {
+      return GetMetaTypeSerializer(name).GetConstructor(new Type[] { }).Invoke(new object[] { });
+    }
+    
     internal static Type GetMetaTypeSerializer(QMetaType type)
     {
       if (metaTypes.ContainsKey(type))
@@ -133,6 +153,12 @@ namespace Qutter
     private static Type GetMetaTypeSerializer(int type)
     {
       return GetMetaTypeSerializer((QMetaType)type);
+    }
+    
+    public static object Invoke(string type, string method, object[] data)
+    {
+      var o = GetMetaTypeSerializer(type).GetConstructor(new Type[] { }).Invoke(new object[] { });
+      return o.GetType().GetMethod(method).Invoke(o, data);
     }
     
     public static object Invoke(Type type, string method, object[] data)
@@ -182,7 +208,7 @@ namespace Qutter
   
   public class QVariant
   {
-    private QVariant(object value, QMetaType type)
+    internal QVariant(object value, QMetaType type)
     {
       Value = value;
       Type  = type;
@@ -424,6 +450,20 @@ namespace Qutter
     {
       QMetaType metaType = (QMetaType)br.ReadUInt32();
       int n = br.BaseStream.ReadByte();
+      
+      if (metaType == QMetaType.UserType) {
+        byte[] byteData;
+        QTypeManager.Deserialize(br.BaseStream, out byteData);
+        string name = Encoding.ASCII.GetString(byteData, 0, byteData.Length - 1);
+
+        Type t = QTypeManager.GetMetaTypeSerializer(name);
+
+        if (t == null)
+          throw new Exception(string.Format("UserType({0}) not registered", name));
+        
+        object o = QTypeManager.Invoke(name, "Deserialize", new object[] { br, type });
+        return new QVariant(o, QMetaType.UserType);
+      }
       
       object data = null;
       if (n == 0) {
