@@ -19,14 +19,20 @@ Supported Qt objects.
 The following provides a list of qt object serializers which are
 provided with this library.
 
-> 1. QString      - string
-> 2. QChar        - char
-> 3. int          - int
-> 4. bool         - bool
-> 4. QByteArray   - byte[]
-> 5. QVariant     - QVariant
-> 6. QMap<T1, T2> - Dictionary<T1, T2>
-> 7. QList<T1>    - List<T1>
+>  1. bool         - bool
+>  2. int          - int
+>  3. uint         - uint
+>  4. QChar        - char
+>  5. QVariantMap  - Dictionary<string, QVariant>
+>  6. QVariantList - List<QVariant>
+>  7. QString      - string
+>  8. QStringList  - List<string>
+>  9. QByteArray   - byte[]
+> 10. QDate        - DateTime
+> 
+> 11. QVariant     - QVariant
+> 12. QMap<T1, T2> - Dictionary<T1, T2>
+> 13. QList<T1>    - List<T1>
 
 
 .NET Runtime
