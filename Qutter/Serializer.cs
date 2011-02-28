@@ -96,7 +96,6 @@ namespace Qutter
     
     internal static Type GetType(QMetaType type)
     {
-      Console.WriteLine("{0}({1})", type, (int)type);
       return metaTypes[type];
     }
     
