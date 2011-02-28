@@ -103,6 +103,9 @@ namespace Qutter
     
     internal static Type GetType(QMetaType type)
     {
+      if (!metaTypes.ContainsKey(type)) {
+        throw new Exception(string.Format("No such MetaType in cache {0}({1})", type, (int)type));
+      }
       return metaTypes[type];
     }
     
