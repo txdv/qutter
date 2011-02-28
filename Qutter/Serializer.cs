@@ -52,7 +52,7 @@ namespace Qutter
     private static readonly IDictionary<QMetaType, Type> metaTypes = new Dictionary<QMetaType, Type>();
     private static readonly IDictionary<Type, QMetaType> dnetTypes = new Dictionary<Type, QMetaType>();
     
-    static void Register(Type type, Type metaTypeSerializer, QMetaType metaType)
+    private static void Register(Type type, Type metaTypeSerializer, QMetaType metaType)
     {
       typeDict[type] = metaTypeSerializer;
       if (!metaTypeSerializer.IsGenericType || (metaTypeSerializer.IsGenericType && type != type.GetGenericTypeDefinition())) {
