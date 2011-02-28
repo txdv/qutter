@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
-using Qutter.BinaryExtensions;
 using MiscUtil.IO;
 using MiscUtil.Conversion;
 
