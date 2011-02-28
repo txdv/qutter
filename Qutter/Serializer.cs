@@ -48,7 +48,7 @@ namespace Qutter
     static void Register(Type type, Type metaTypeSerializer)
     {
       typeDict[type] = metaTypeSerializer;
-      if (!metaTypeSerializer.IsGenericType) {
+      if (!metaTypeSerializer.IsGenericType || (metaTypeSerializer.IsGenericType && type != type.GetGenericTypeDefinition())) {
         var o = metaTypeSerializer.GetConstructor(new Type[] { }).Invoke(new object[] { });
         QMetaType metaType = (QMetaType)metaTypeSerializer.GetProperty("Type").GetValue(o, new object[] { });
         metaTypes[metaType] = type;
@@ -68,6 +68,7 @@ namespace Qutter
       
       // special classes
       Register(typeof(QVariant), typeof(QVariantSerializer));
+      Register(typeof(Dictionary<string, QVariant>), typeof(QMapSerializer<string, QVariant>));
       
       // generic definitions
       Register(typeof(List<>),        typeof(QListSerializer<>));
@@ -363,7 +364,7 @@ namespace Qutter
   
   public class QMapSerializer<T1, T2> : QMetaTypeSerializer<Dictionary<T1, T2>>
   {
-    public QMetaType Type { get { return QMetaType.None; } }
+    public QMetaType Type { get { return QMetaType.QVariantMap; } }
     
     public void Serialize(EndianBinaryWriter bw, Dictionary<T1, T2> data)
     {
