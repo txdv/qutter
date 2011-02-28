@@ -475,6 +475,10 @@ namespace Qutter
       if (n == 0) {
         data = QTypeManager.Deserialize(br, QTypeManager.GetType(metaType));
       }
+      
+      if (data == null)
+        return new QVariant(data, metaType);
+      
       return new QVariant(data);
     }
   }
