@@ -1,0 +1,33 @@
+<code>
+<cinclude><![CDATA[#include <QVariant>]]></cinclude>
+<cwrite><![CDATA[
+  out << QVariant(5);
+  out << QVariant(QString("nesamone"));
+]]></cwrite>
+<cread><![CDATA[
+  QVariant v;
+  in >> v;
+  assert(v.value<int>() == 5);
+  in >> v;
+  assert(v.value<QString>() == "nesamone");
+]]></cread>
+<cswrite><![CDATA[
+    QVariant v;
+    v = new QVariant(5);
+    QTypeManager.Serialize(fs, v);
+    v = new QVariant("nesamone");
+    QTypeManager.Serialize(fs, v);
+]]></cswrite>
+<csread><![CDATA[
+    QVariant v;
+    QTypeManager.Deserialize(fs, out v);
+    Debug.Assert(v.Type == QMetaType.Int);
+    Debug.Assert(v.Value != null);
+    Debug.Assert((int)v.Value == 5);
+
+    QTypeManager.Deserialize(fs, out v);
+    Debug.Assert(v.Type == QMetaType.QString);
+    Debug.Assert(v.Value != null);
+    Debug.Assert((string)v.Value == "nesamone");
+]]></csread>
+</code>

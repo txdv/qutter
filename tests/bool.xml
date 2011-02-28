@@ -1,0 +1,24 @@
+<code>
+<cinclude><![CDATA[]]></cinclude>
+<cwrite><![CDATA[
+  out << true;
+  out << false;
+]]></cwrite>
+<cread><![CDATA[
+  bool b;
+  in >> b;
+  assert(b == true);
+  in >> b;
+  assert(b == false);
+]]></cread>
+<cswrite><![CDATA[
+    QTypeManager.Serialize(fs, true);
+    QTypeManager.Serialize(fs, false);
+]]></cswrite>
+<csread><![CDATA[]]></csread>
+    bool b;
+    QTypeManager.Deserialize(fs, out b);
+    Debug.Assert(b == true);
+    QTypeManager.Deserialize(fs, out b);
+    Debug.Assert(b == false);
+</code>

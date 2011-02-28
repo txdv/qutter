@@ -1,0 +1,31 @@
+<code>
+<cinclude><![CDATA[]]></cinclude>
+<cwrite><![CDATA[
+  out << 1;
+  out << 42;
+  out << -6;
+]]></cwrite>
+<cread><![CDATA[
+  int i;
+  in >> i;
+  assert(i == 1);
+  in >> i;
+  assert(i == 42);
+  in >> i;
+  assert(i == -6);
+]]></cread>
+<cswrite><![CDATA[
+    QTypeManager.Serialize(fs, 1);
+    QTypeManager.Serialize(fs, 42);
+    QTypeManager.Serialize(fs, -6);
+]]></cswrite>
+<csread><![CDATA[
+    int i;
+    QTypeManager.Deserialize(fs, out i);
+    Debug.Assert(i == 1);
+    QTypeManager.Deserialize(fs, out i);
+    Debug.Assert(i == 42);
+    QTypeManager.Deserialize(fs, out i);
+    Debug.Assert(i == -6);
+]]></csread>
+</code>

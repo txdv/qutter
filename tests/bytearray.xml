@@ -1,0 +1,26 @@
+<code>
+<cinclude><![CDATA[#include <QByteArray>]]></cinclude>
+<cwrite><![CDATA[
+  QByteArray ba = QByteArray("12345");
+  out << ba;
+]]></cwrite>
+<cread><![CDATA[
+  QByteArray ba;
+  in >> ba;
+  assert(ba.startsWith("12345") && ba.size() == 5);
+]]></cread>
+<cswrite><![CDATA[
+    byte[] ba = new byte[] { 49, 50, 51, 52, 53 };
+    QTypeManager.Serialize(fs, ba);
+]]></cswrite>
+<csread><![CDATA[
+    byte[] ba;
+    QTypeManager.Deserialize(fs, out ba);
+    Debug.Assert(ba.Length == 5);
+    Debug.Assert(ba[0] == 49);
+    Debug.Assert(ba[1] == 50);
+    Debug.Assert(ba[2] == 51);
+    Debug.Assert(ba[3] == 52);
+    Debug.Assert(ba[4] == 53);
+]]></csread>
+</code>

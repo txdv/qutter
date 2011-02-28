@@ -1,0 +1,25 @@
+<code>
+<cinclude><![CDATA[]]></cinclude>
+<cwrite><![CDATA[
+  out << QChar('a');
+  out << QChar('z');
+]]></cwrite>
+<cread><![CDATA[
+  QChar c;
+  in >> c;
+  assert(c.toAscii() == 'a');
+  in >> c;
+  assert(c.toAscii() == 'z');
+]]></cread>
+<cswrite><![CDATA[
+    QTypeManager.Serialize(fs, 'a');
+    QTypeManager.Serialize(fs, 'z');
+]]></cswrite>
+<csread><![CDATA[
+    char c;
+    QTypeManager.Deserialize(fs, out c);
+    Debug.Assert(c == 'a');
+    QTypeManager.Deserialize(fs, out c);
+    Debug.Assert(c == 'z');
+]]></csread>
+</code>

@@ -1,0 +1,34 @@
+<code>
+<cinclude><![CDATA[#include <QMap>]]></cinclude>
+<cwrite><![CDATA[
+  QMap<int, int> m = QMap<int, int>();
+  m[1] = 2;
+  m[2] = 4;
+  m[4] = 6;
+  out << m;
+]]></cwrite>
+<cread><![CDATA[
+  QMap<int, int> m;
+  in >> m;
+  assert(m.size() == 3);
+  assert(m[1] == 2);
+  assert(m[2] == 4);
+  assert(m[4] == 6);
+]]></cread>
+<cswrite><![CDATA[
+    Dictionary<int, int> map = new Dictionary<int, int>();
+    map[1] = 2;
+    map[2] = 4;
+    map[4] = 6;
+    QTypeManager.Serialize(fs, map);
+]]></cswrite>
+<csread><![CDATA[
+    Dictionary<int, int> map = null;
+    QTypeManager.Deserialize(fs, out map);
+
+    Debug.Assert(map.Count == 3);
+    Debug.Assert(map[1] == 2);
+    Debug.Assert(map[2] == 4);
+    Debug.Assert(map[4] == 6);
+]]></csread>
+</code>

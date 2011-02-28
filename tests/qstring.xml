@@ -1,0 +1,27 @@
+<code>
+<cinclude><![CDATA[#include <QString>]]></cinclude>
+<cwrite><![CDATA[
+  out << QString("test");
+
+  out << QString("unicode ąčęėįšūöä");
+]]></cwrite>
+<cread>
+  QString s;
+  in >> s;
+  assert(s == "test");
+  in >> s;
+  assert(s == "unicode ąčęėįšūöä");
+</cread>
+<cswrite>
+    QTypeManager.Serialize(fs, "test");
+    QTypeManager.Serialize(fs, "unicode ąčęėįšūöä");
+</cswrite>
+<csread>
+    string str;
+    QTypeManager.Deserialize(fs, out str);
+    Debug.Assert(str.Length == 4);
+    Debug.Assert(str == "test");
+    QTypeManager.Deserialize(fs, out str);
+    Debug.Assert(str == "unicode ąčęėįšūöä");
+</csread>
+</code>
