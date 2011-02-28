@@ -33,8 +33,16 @@ namespace Qutter
     QVariantMap  = 8,
     QVariantList = 9,
     
-    QString    = 10,
-    QByteArray = 12,
+    QString     = 10,
+    QStringList = 11,
+    QByteArray  = 12,
+
+    QBitArray = 13,
+    QDate     = 14,
+    QTime     = 15,
+    QDateTime = 16,
+    QUrl      = 17,
+
     
     UserType = 127,
   }
@@ -59,16 +67,19 @@ namespace Qutter
     static QTypeManager()
     {
       // non generic values
-      Register(typeof(void),   typeof(VoidSerializer));
-      Register(typeof(bool),   typeof(BoolSerializer));
-      Register(typeof(int),    typeof(QIntegerSerializer));
-      Register(typeof(char),   typeof(QCharSerializer));
-      Register(typeof(byte[]), typeof(QByteArraySerializer));
-      Register(typeof(string), typeof(QStringSerializer));
+      Register(typeof(void),     typeof(VoidSerializer));
+      Register(typeof(bool),     typeof(BoolSerializer));
+      Register(typeof(int),      typeof(QIntegerSerializer));
+      Register(typeof(uint),     typeof(QUIntegerSerializer));
+      Register(typeof(char),     typeof(QCharSerializer));
+      Register(typeof(byte[]),   typeof(QByteArraySerializer));
+      Register(typeof(string),   typeof(QStringSerializer));
+      Register(typeof(DateTime), typeof(QDateTimeSerializer));
       
       // special classes
-      Register(typeof(QVariant), typeof(QVariantSerializer));
+      Register(typeof(QVariant),                     typeof(QVariantSerializer));
       Register(typeof(Dictionary<string, QVariant>), typeof(QMapSerializer<string, QVariant>));
+      Register(typeof(List<QVariant>),               typeof(QListSerializer<QVariant>));
       
       // generic definitions
       Register(typeof(List<>),        typeof(QListSerializer<>));
@@ -82,6 +93,7 @@ namespace Qutter
     
     internal static Type GetType(QMetaType type)
     {
+      Console.WriteLine("{0}({1})", type, (int)type);
       return metaTypes[type];
     }
     
@@ -251,6 +263,23 @@ namespace Qutter
     }
   }
   
+  public class QUIntegerSerializer : QMetaTypeSerializer<uint>
+  {
+    public QMetaType Type { get { return QMetaType.UInt; } }
+    
+    public string Name { get { return "QUInteger"; } }
+    
+    public void Serialize(EndianBinaryWriter bw, uint data)
+    {
+      bw.Write(data);
+    }
+    
+    public uint Deserialize(EndianBinaryReader br, Type type)
+    {
+      return br.ReadUInt32();
+    }
+  }
+  
   public class QCharSerializer : QMetaTypeSerializer<char>
   {
     public QMetaType Type { get { return QMetaType.QChar; } }
@@ -329,7 +358,7 @@ namespace Qutter
   
   public class QListSerializer<T> : QMetaTypeSerializer<List<T>>
   {
-    public QMetaType Type { get { return QMetaType.None; } }
+    public QMetaType Type { get { return QMetaType.QVariantList; } }
     
     public void Serialize(EndianBinaryWriter bw, List<T> data)
     {
@@ -432,6 +461,63 @@ namespace Qutter
         data = QTypeManager.Deserialize(br, QTypeManager.GetType(metaType));
       }
       return new QVariant(data);
+    }
+  }
+  
+  public class QDateTimeSerializer : QMetaTypeSerializer<DateTime>
+  {
+    public QMetaType Type { get { return QMetaType.QDateTime; } }
+    
+    public void Serialize(EndianBinaryWriter bw, DateTime data)
+    {
+      int a = (14 - data.Month) / 12;
+      int y = data.Year + 4800 - a;
+      int m = data.Month + 12 * a - 3;
+      int jdn = data.Day + (153 * m + 2) / 5 + 365 * y + y / 4 - y/100 + y/400 - 32045;
+      bw.Write(jdn);
+
+
+      int secondsSinceMidnight = data.Hour * 3600 + data.Minute * 60 + data.Second;
+      bw.Write(secondsSinceMidnight);
+
+      // TODO: fix this
+      bw.Write((byte)0);
+    }
+    public DateTime Deserialize(EndianBinaryReader br, Type type)
+    {
+      // code taken from quasseldroid, i dont know what this shit does.
+      long julianDay = br.ReadUInt32();
+      long secondsSinceMidnight = br.ReadUInt32();
+      long isUTC = br.ReadByte();
+      
+      double J = (double)(julianDay) + 0.5f;
+      long j = (int) (J + 32044);
+      long g = j / 146097;
+      long dg = j % 146097;
+      long c = (((dg / 36524) + 1) * 3) / 4;
+      long dc = dg - c * 36524;
+      long b = dc / 1461;
+      long db = dc % 1461;
+      long a = (db / 365 + 1) * 3 / 4;
+      long da = db - a * 365;
+      long y = g * 400 + c * 100 + b * 4 + a;
+      long m = (da * 5 + 308) / 153 - 2;
+      long d = da - (m + 4) * 153 / 5 + 122;
+  
+      int year = (int) (y - 4800 + (m+2)/12);
+      int month = (int) ((m+2) % 12 + 1);
+      int day = (int) (d + 1);
+  
+      int hour = (int) (secondsSinceMidnight / 3600000);
+      int minute = (int)((secondsSinceMidnight - (hour*3600000))/60000);
+      int second = (int)((secondsSinceMidnight - (hour*3600000) - (minute*60000))/1000);
+      int millis = (int)((secondsSinceMidnight - (hour*3600000) - (minute*60000) - (second * 1000)));
+
+      if (isUTC == 1) {
+        // TODO: do something about this
+      }
+      
+      return new DateTime(year, month, day, hour, minute, second, millis);
     }
   }
 }
