@@ -52,12 +52,15 @@ namespace Qutter
     private static readonly IDictionary<QMetaType, Type> metaTypes = new Dictionary<QMetaType, Type>();
     private static readonly IDictionary<Type, QMetaType> dnetTypes = new Dictionary<Type, QMetaType>();
     
-    static void Register(Type type, Type metaTypeSerializer)
+    static void Register(Type type, Type metaTypeSerializer, QMetaType metaType)
     {
       typeDict[type] = metaTypeSerializer;
       if (!metaTypeSerializer.IsGenericType || (metaTypeSerializer.IsGenericType && type != type.GetGenericTypeDefinition())) {
         var o = metaTypeSerializer.GetConstructor(new Type[] { }).Invoke(new object[] { });
-        QMetaType metaType = (QMetaType)metaTypeSerializer.GetProperty("Type").GetValue(o, new object[] { });
+
+        if (metaType == QMetaType.None)
+          return;
+        
         metaTypes[metaType] = type;
         dnetTypes[type]     = metaType;
       }
@@ -66,23 +69,24 @@ namespace Qutter
     static QTypeManager()
     {
       // non generic values
-      Register(typeof(void),     typeof(VoidSerializer));
-      Register(typeof(bool),     typeof(BoolSerializer));
-      Register(typeof(int),      typeof(QIntegerSerializer));
-      Register(typeof(uint),     typeof(QUIntegerSerializer));
-      Register(typeof(char),     typeof(QCharSerializer));
-      Register(typeof(byte[]),   typeof(QByteArraySerializer));
-      Register(typeof(string),   typeof(QStringSerializer));
-      Register(typeof(DateTime), typeof(QDateTimeSerializer));
+      Register(typeof(void),     typeof(VoidSerializer)      , QMetaType.Void);
+      Register(typeof(bool),     typeof(BoolSerializer)      , QMetaType.Bool);
+      Register(typeof(int),      typeof(QIntegerSerializer)  , QMetaType.Int);
+      Register(typeof(uint),     typeof(QUIntegerSerializer) , QMetaType.UInt);
+      Register(typeof(char),     typeof(QCharSerializer)     , QMetaType.QChar);
+      Register(typeof(byte[]),   typeof(QByteArraySerializer), QMetaType.QByteArray);
+      Register(typeof(string),   typeof(QStringSerializer)   , QMetaType.QString);
+      Register(typeof(DateTime), typeof(QDateTimeSerializer) , QMetaType.QDateTime);
       
       // special classes
-      Register(typeof(QVariant),                     typeof(QVariantSerializer));
-      Register(typeof(Dictionary<string, QVariant>), typeof(QMapSerializer<string, QVariant>));
-      Register(typeof(List<QVariant>),               typeof(QListSerializer<QVariant>));
+      Register(typeof(QVariant)                    , typeof(QVariantSerializer)              , QMetaType.None);
+      Register(typeof(Dictionary<string, QVariant>), typeof(QMapSerializer<string, QVariant>), QMetaType.QVariantMap);
+      Register(typeof(List<QVariant>)              , typeof(QListSerializer<QVariant>)       , QMetaType.QVariantList);
+      Register(typeof(List<string>)                , typeof(QListSerializer<string>)         , QMetaType.QStringList);
       
       // generic definitions
-      Register(typeof(List<>),        typeof(QListSerializer<>));
-      Register(typeof(Dictionary<,>), typeof(QMapSerializer<,>));
+      Register(typeof(List<>),        typeof(QListSerializer<>), QMetaType.None);
+      Register(typeof(Dictionary<,>), typeof(QMapSerializer<,>), QMetaType.None);
     }
     
     internal static QMetaType GetType(Type type)
@@ -209,15 +213,12 @@ namespace Qutter
   
   public interface QMetaTypeSerializer<T>
   {
-    QMetaType Type { get; }
     void Serialize(EndianBinaryWriter bw, T data);
     T Deserialize(EndianBinaryReader br, Type type);
   }
   
   public class VoidSerializer : QMetaTypeSerializer<object>
   {
-    public QMetaType Type { get { return QMetaType.Void; } }
-    
     public void Serialize(EndianBinaryWriter bw, object data)
     {
     }
@@ -230,10 +231,6 @@ namespace Qutter
   
   public class BoolSerializer : QMetaTypeSerializer<bool>
   {
-    public QMetaType Type { get { return QMetaType.Bool; } }
-    
-    public string Name { get { return "Bool"; } }
-    
     public void Serialize(EndianBinaryWriter bw, bool data)
     {
       bw.Write(data);
@@ -247,10 +244,6 @@ namespace Qutter
   
   public class QIntegerSerializer : QMetaTypeSerializer<int>
   {
-    public QMetaType Type { get { return QMetaType.Int; } }
-    
-    public string Name { get { return "QInteger"; } }
-    
     public void Serialize(EndianBinaryWriter bw, int data)
     {
       bw.Write(data);
@@ -264,10 +257,6 @@ namespace Qutter
   
   public class QUIntegerSerializer : QMetaTypeSerializer<uint>
   {
-    public QMetaType Type { get { return QMetaType.UInt; } }
-    
-    public string Name { get { return "QUInteger"; } }
-    
     public void Serialize(EndianBinaryWriter bw, uint data)
     {
       bw.Write(data);
@@ -281,10 +270,6 @@ namespace Qutter
   
   public class QCharSerializer : QMetaTypeSerializer<char>
   {
-    public QMetaType Type { get { return QMetaType.QChar; } }
-    
-    public string Name { get { return "QChar"; } }
-    
     public void Serialize(EndianBinaryWriter bw, char data)
     {
       bw.WriteChar(data);
@@ -298,10 +283,6 @@ namespace Qutter
 
   public class QStringSerializer : QMetaTypeSerializer<string>
   {
-    public QMetaType Type { get { return QMetaType.QString; } }
-    
-    public string Name { get { return "QString"; } }
-    
     public void Serialize(EndianBinaryWriter bw, string data)
     {
       if (data == null) {
@@ -331,10 +312,6 @@ namespace Qutter
   
   public class QByteArraySerializer : QMetaTypeSerializer<byte[]>
   {
-    public QMetaType Type { get { return QMetaType.QByteArray; } }
-    
-    public string Name { get { return "QByteArray"; } }
-    
     public void Serialize(EndianBinaryWriter bw, byte[] data)
     {
       if (data == null) {
@@ -357,8 +334,6 @@ namespace Qutter
   
   public class QListSerializer<T> : QMetaTypeSerializer<List<T>>
   {
-    public QMetaType Type { get { return QMetaType.QVariantList; } }
-    
     public void Serialize(EndianBinaryWriter bw, List<T> data)
     {
       int len = (int)data.GetType().GetProperty("Count").GetValue(data, new object[] {});
@@ -392,8 +367,6 @@ namespace Qutter
   
   public class QMapSerializer<T1, T2> : QMetaTypeSerializer<Dictionary<T1, T2>>
   {
-    public QMetaType Type { get { return QMetaType.QVariantMap; } }
-    
     public void Serialize(EndianBinaryWriter bw, Dictionary<T1, T2> data)
     {
       if (data == null) {
@@ -436,8 +409,6 @@ namespace Qutter
   
   public class QVariantSerializer : QMetaTypeSerializer<QVariant>
   {
-    public QMetaType Type { get { return QMetaType.None; } }
-    
     public void Serialize(EndianBinaryWriter bw, QVariant data)
     {
       bw.Write((int)data.Type);
@@ -465,8 +436,6 @@ namespace Qutter
   
   public class QDateTimeSerializer : QMetaTypeSerializer<DateTime>
   {
-    public QMetaType Type { get { return QMetaType.QDateTime; } }
-    
     public void Serialize(EndianBinaryWriter bw, DateTime data)
     {
       int a = (14 - data.Month) / 12;
