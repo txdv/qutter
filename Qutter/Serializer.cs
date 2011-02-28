@@ -98,6 +98,9 @@ namespace Qutter
     
     internal static QMetaType GetType(Type type)
     {
+      if (!dnetTypes.ContainsKey(type)) {
+        throw new Exception(string.Format("No such dnetType in cache {0})", type));
+      }
       return dnetTypes[type];
     }
     
