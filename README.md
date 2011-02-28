@@ -31,10 +31,11 @@ provided with this library.
 >  8. QStringList  - List<string>
 >  9. QByteArray   - byte[]
 > 10. QDate        - DateTime
+> 11. QTime        - TimeSpan
 > 
-> 11. QVariant     - QVariant
-> 12. QMap<T1, T2> - Dictionary<T1, T2>
-> 13. QList<T1>    - List<T1>
+> 12. QVariant     - QVariant
+> 13. QMap<T1, T2> - Dictionary<T1, T2>
+> 14. QList<T1>    - List<T1>
 
 
 .NET Runtime
