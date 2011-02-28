@@ -43,7 +43,6 @@ namespace Qutter
     QDateTime = 16,
     QUrl      = 17,
 
-    
     UserType = 127,
   }
   
