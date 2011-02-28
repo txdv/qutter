@@ -41,8 +41,9 @@ namespace Qutter
   
   public class QTypeManager
   {
-    private static readonly IDictionary<Type,      Type> typeDict    = new Dictionary<Type,      Type>();
-    private static readonly IDictionary<QMetaType, Type> typeNumDict = new Dictionary<QMetaType, Type>();
+    private static readonly IDictionary<Type,      Type> typeDict  = new Dictionary<Type,      Type>();
+    private static readonly IDictionary<QMetaType, Type> metaTypes = new Dictionary<QMetaType, Type>();
+    private static readonly IDictionary<Type, QMetaType> dnetTypes = new Dictionary<Type, QMetaType>();
     
     static void Register(Type type, Type metaTypeSerializer)
     {
@@ -50,7 +51,8 @@ namespace Qutter
       if (!metaTypeSerializer.IsGenericType) {
         var o = metaTypeSerializer.GetConstructor(new Type[] { }).Invoke(new object[] { });
         QMetaType metaType = (QMetaType)metaTypeSerializer.GetProperty("Type").GetValue(o, new object[] { });
-        typeNumDict[metaType] = metaTypeSerializer;
+        metaTypes[metaType] = type;
+        dnetTypes[type]     = metaType;
       }
     }
     
@@ -65,27 +67,52 @@ namespace Qutter
       Register(typeof(string), typeof(QStringSerializer));
       
       // special classes
-      Register(typeof(QVariant<>), typeof(QVariantSerializer<>));
+      Register(typeof(QVariant), typeof(QVariantSerializer));
       
       // generic definitions
       Register(typeof(List<>),        typeof(QListSerializer<>));
       Register(typeof(Dictionary<,>), typeof(QMapSerializer<,>));
     }
     
+    internal static QMetaType GetType(Type type)
+    {
+      return dnetTypes[type];
+    }
+    
+    internal static Type GetType(QMetaType type)
+    {
+      return metaTypes[type];
+    }
+    
     internal static Type GetMetaTypeSerializer(Type type)
     {
-        if (typeDict.ContainsKey(type))
-          return typeDict[type];
+      if (typeDict.ContainsKey(type))
+        return typeDict[type];
+      
+      if (type.IsGenericType && typeDict.ContainsKey(type)) {
+        return typeDict[type];
+      } else {
+        Type genericType = type.GetGenericTypeDefinition();
+        Type serializer = typeDict[genericType];
         
-        if ((type.IsGenericType) && typeDict.ContainsKey(type.GetGenericTypeDefinition()))
-          return typeDict[type.GetGenericTypeDefinition()];
+        if (serializer == null)
+          return null;
         
-        return null;
+        return genericType.MakeGenericType(type.GetGenericArguments());
+      }
+    }
+    
+    internal static object GetMetaTypeSerializerInstance(Type type)
+    {
+      return GetMetaTypeSerializer(type).GetConstructor(new Type[] { }).Invoke(new object[] { });
     }
     
     internal static Type GetMetaTypeSerializer(QMetaType type)
     {
-      return typeNumDict[type];
+      if (metaTypes.ContainsKey(type))
+        return GetMetaTypeSerializer(metaTypes[type]);
+      else
+        return null;
     }
     
     private static Type GetMetaTypeSerializer(int type)
@@ -138,67 +165,34 @@ namespace Qutter
     }
   }
   
-  public static class QVariant
+  public class QVariant
   {
-    public static Type MakeGenericType(object qvariant)
-    {
-      Type type = qvariant.GetType().GetGenericArguments()[0];
-      return typeof(QVariant<>).MakeGenericType(new Type[] { type });
-    }
-      
-    public static QMetaType GetType(object qvariant)
-    {
-      Type t = MakeGenericType(qvariant);
-      return (QMetaType)t.GetProperty("Type").GetValue(qvariant, new object[] { });
-    }
-    
-    public static object GetValue(object qvariant)
-    {
-      var t = MakeGenericType(qvariant);
-      return t.GetProperty("Value").GetValue(qvariant, new object[] { });
-    }
-    
-    public static Type GetType(QMetaType type)
-    {
-      switch (type) {
-      case QMetaType.Bool:
-        return typeof(bool);
-      case QMetaType.QString:
-        return typeof(string);
-      case QMetaType.QChar:
-        return typeof(char);
-      default:
-        return null;
-      }
-    }
-  }
-  
-  public class QVariant<T>
-  {
-    private QVariant(T value, QMetaType type)
+    private QVariant(object value, QMetaType type)
     {
       Value = value;
       Type  = type;
     }
     
-    public QVariant(T value)
-      : this(value, QMetaType.None)
+    public QVariant(object value)
+      : this(value, QTypeManager.GetType(value.GetType()))
     {
     }
     
-    public T Value { get; protected set; }
+    public object Value { get; protected set; }
     public QMetaType Type { get; protected set; }
-  }
-  
-  
-  // TODO: implement a working class of this
-  public class QVariantMap<T> : Dictionary<string, QVariant<T>>
-  {
-  }
-  
-  // TODO: implement a working class of this
-  public class QVariantList<T> : List<QVariant<T>>
-  {
+    
+    /// <summary>
+    /// Qt like function for retrieving the value
+    /// returns null, if the types expected type
+    /// differs from the actual
+    /// </summary>
+    public T GetValue<T>()
+    {
+      if (typeof(T) != Value.GetType())
+        return default(T);
+      
+      return (T)Value;
+    }
   }
   
   public interface QMetaTypeSerializer<T>
@@ -353,10 +347,10 @@ namespace Qutter
       
       if (len == -1)
         return null; 
-      
+
       var listDef = type.GetGenericTypeDefinition().MakeGenericType(type.GetGenericArguments());
       List<T> list = (List<T>)listDef.GetConstructor(new Type[] {}).Invoke(new object[] { });
-      
+
       Type listElementType = type.GetGenericArguments()[0];
       
       for (int i = 0; i < len; i++) {
@@ -411,67 +405,32 @@ namespace Qutter
     }
   }
   
-  public class QVariantSerializer<T> : QMetaTypeSerializer<List<T>>
+  public class QVariantSerializer : QMetaTypeSerializer<QVariant>
   {
     public QMetaType Type { get { return QMetaType.None; } }
     
-    public void Serialize(EndianBinaryWriter bw, List<T> data)
+    public void Serialize(EndianBinaryWriter bw, QVariant data)
     {
+      bw.Write((int)data.Type);
       
-      var t = typeof(QVariant<>).MakeGenericType(new Type[] { data.GetType() });
-      List<T> o = (List<T>)t.GetConstructor(new Type[] { }).Invoke(new object[] { data });
-      
-      //QVariant variant = data as QVariant;
-      var qvariantValue = t.GetProperty("Value").GetValue(o, new object[] { });
-      
-      bw.Write((int)QVariant.GetType(o));
-      
-      if (qvariantValue == null) {
+      if (data.Value == null) {
         bw.Write((byte)1);
       } else {
         bw.Write((byte)0);
-        QTypeManager.Serialize(bw, qvariantValue);
+        QTypeManager.Serialize(bw, data.Value);
       }
     }
     
-    public List<T> Deserialize(EndianBinaryReader br, Type type)
+    public QVariant Deserialize(EndianBinaryReader br, Type type)
     {
-      
       QMetaType metaType = (QMetaType)br.ReadUInt32();
       int n = br.BaseStream.ReadByte();
       
-      Type dotNetType = QVariant.GetType(metaType);
-      
-      if (n == 1) {
-        
-      } else { 
-        Type metaTypeSerializer = QTypeManager.GetMetaTypeSerializer(metaType);
-        Console.WriteLine(metaTypeSerializer);
-        //if (metaTypeSerializer == null) {
-        //  Console.WriteLine("PZDC");
-        //}
+      object data = null;
+      if (n == 0) {
+        data = QTypeManager.Deserialize(br, QTypeManager.GetType(metaType));
       }
-      
-      
-      /*
-      if (n == 1) {
-        return new QVariant(metaType);
-      } else {
-        object data = QTypeManager.GetMetaTypeSerializer(metaType).Deserialize(br, type);
-        if (data == null)
-          return new QVariant(metaType);
-        
-        switch (metaType) {
-        case QMetaType.Int:
-          return new QVariant((int)data);
-        case QMetaType.QString:
-          return new QVariant((string)data);
-        default:
-          return new QVariant(metaType);
-        }
-      }
-      */
-      return null;
+      return new QVariant(data);
     }
   }
 }

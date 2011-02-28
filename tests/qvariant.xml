@@ -12,18 +12,17 @@
   assert(v.value<QString>() == "nesamone");
 ]]></cread>
 <cswrite><![CDATA[
-    QVariant<int> vi = new QVariant<int>(5);
-    QTypeManager.Serialize(fs, vi);
-    QVariant<string> vs = new QVariant<string>("nesamone");
-    QTypeManager.Serialize(fs, vs);
+    QVariant v = new QVariant(5);
+    QTypeManager.Serialize(fs, v);
+    v = new QVariant("nesamone");
+    QTypeManager.Serialize(fs, v);
 ]]></cswrite>
 <csread><![CDATA[
-    QVariant<int> v;
+    QVariant v;
     QTypeManager.Deserialize(fs, out v);
-    Debug.Assert(v.Value == 5);
+    Debug.Assert((int)v.Value == 5);
 
-    QVariant<string> str;
-    QTypeManager.Deserialize(fs, out str);
-    Debug.Assert(str.Value == "nesamone");
+    QTypeManager.Deserialize(fs, out v);
+    Debug.Assert((string)v.Value == "nesamone");
 ]]></csread>
 </code>
