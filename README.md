@@ -19,6 +19,8 @@ Supported Qt objects.
 The following provides a list of qt object serializers which are
 provided with this library.
 
+> Qt Object        - .NET Object
+> -----------------------------------------------
 >  1. bool         - bool
 >  2. int          - int
 >  3. uint         - uint
