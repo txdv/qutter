@@ -43,6 +43,8 @@ namespace Qutter
     QUrl      = 17,
 
     UserType = 127,
+
+    UShort = 133,
   }
   
   public class QTypeManager
@@ -84,7 +86,8 @@ namespace Qutter
       Register(typeof(string)  , typeof(QStringSerializer)   , QMetaType.QString);
       Register(typeof(DateTime), typeof(QTimeSerializer)     , QMetaType.QTime);
       Register(typeof(DateTime), typeof(QDateTimeSerializer) , QMetaType.QDateTime);
-      
+      Register(typeof(ushort)  , typeof(QUShortSerializer)   , QMetaType.UShort);
+
       // special classes
       Register(typeof(QVariant)                    , typeof(QVariantSerializer)              , QMetaType.None);
       Register(typeof(Dictionary<string, QVariant>), typeof(QMapSerializer<string, QVariant>), QMetaType.QVariantMap);
@@ -557,6 +560,17 @@ namespace Qutter
       }
       
       return new DateTime(year, month, day, hour, minute, second, millis);
+
+  public class QUShortSerializer : QMetaTypeSerializer<ushort>
+  {
+    public void Serialize (EndianBinaryWriter bw, ushort data)
+    {
+      bw.Write(data);
+    }
+
+    public ushort Deserialize (EndianBinaryReader br, Type type)
+    {
+      return br.ReadUInt16();
     }
   }
 }
