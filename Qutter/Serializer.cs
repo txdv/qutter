@@ -75,13 +75,13 @@ namespace Qutter
     static QTypeManager()
     {
       // non generic values
-      Register(typeof(void),     typeof(VoidSerializer)      , QMetaType.Void);
-      Register(typeof(bool),     typeof(BoolSerializer)      , QMetaType.Bool);
-      Register(typeof(int),      typeof(QIntegerSerializer)  , QMetaType.Int);
-      Register(typeof(uint),     typeof(QUIntegerSerializer) , QMetaType.UInt);
-      Register(typeof(char),     typeof(QCharSerializer)     , QMetaType.QChar);
-      Register(typeof(byte[]),   typeof(QByteArraySerializer), QMetaType.QByteArray);
-      Register(typeof(string),   typeof(QStringSerializer)   , QMetaType.QString);
+      Register(typeof(void)    , typeof(VoidSerializer)      , QMetaType.Void);
+      Register(typeof(bool)    , typeof(BoolSerializer)      , QMetaType.Bool);
+      Register(typeof(int)     , typeof(QIntegerSerializer)  , QMetaType.Int);
+      Register(typeof(uint)    , typeof(QUIntegerSerializer) , QMetaType.UInt);
+      Register(typeof(char)    , typeof(QCharSerializer)     , QMetaType.QChar);
+      Register(typeof(byte[])  , typeof(QByteArraySerializer), QMetaType.QByteArray);
+      Register(typeof(string)  , typeof(QStringSerializer)   , QMetaType.QString);
       Register(typeof(DateTime), typeof(QTimeSerializer)     , QMetaType.QTime);
       Register(typeof(DateTime), typeof(QDateTimeSerializer) , QMetaType.QDateTime);
       
