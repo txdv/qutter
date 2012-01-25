@@ -2,13 +2,27 @@ require 'nokogiri'
 
 FILENAME = "serialization.txt";
 
+class String
+  def ends_with(str)
+    self[length - str.length..length] == str
+  end
+end
+
+def check(file1, file2)
+  return true if !File.exists?(file2)
+  File.mtime(file1) > File.mtime(file2)
+end
+
 def generate(file)
 
 filebasename = File.basename(file, ".xml")
 
+out = "output/" + filebasename
+
 code = Nokogiri::XML(open(file))
 
-File.open(filebasename + "_write.c", "w") do |f|
+if check(file, out + "_write.c")
+File.open(out + "_write.c", "w") do |f|
   f.puts "#include <QFile>"
   f.puts "#include <QDebug>"
   f.puts code.children.at("cinclude").text
@@ -20,8 +34,10 @@ File.open(filebasename + "_write.c", "w") do |f|
   f.puts code.children.at("cwrite").text
   f.puts "\n  return 0;\n}\n";
 end
+end
 
-File.open(filebasename + "_read.c", "w") do |f|
+if check(file, out + "_read.c")
+File.open(out + "_read.c", "w") do |f|
   f.puts "#include <QFile>"
   f.puts "#include <QDebug>"
   f.puts "#include <assert.h>"
@@ -36,8 +52,10 @@ File.open(filebasename + "_read.c", "w") do |f|
   f.puts code.children.at("cread").text
   f.puts "\n  return 0;\n}\n";
 end
+end
 
-File.open(filebasename + "_write.cs", "w") do |f|
+if check(file, out + "_write.cs")
+File.open(out + "_write.cs", "w") do |f|
   f.puts "#define DEBUG"
   f.puts "using System;"
   f.puts "using System.IO;"
@@ -53,8 +71,10 @@ File.open(filebasename + "_write.cs", "w") do |f|
   f.puts "  }"
   f.puts "}";
 end
+end
 
-File.open(filebasename + "_read.cs", "w") do |f|
+if check(file, out + "_read.cs")
+File.open(out + "_read.cs", "w") do |f|
   f.puts "#define DEBUG"
   f.puts "using System;"
   f.puts "using System.IO;"
@@ -72,6 +92,7 @@ File.open(filebasename + "_read.cs", "w") do |f|
   f.puts "  }"
   f.puts "}";
 end
+end
 
 
 File.open("test", "w+") do |f|
@@ -83,25 +104,48 @@ end
 
 end
 
-Dir["*.xml"].each do |file|
-  puts "Generating for #{file}"
+Dir["tests/*.xml"].each do |file|
+  puts "Generating tests for #{File.basename(file, ".xml")}"
   generate(file)
 end
 
 File.delete("test")
-puts "Generating test"
-File.open("test", "w+") do |test|
-Dir["*.xml"].each do |file|
+puts "Generating Makefile"
+File.open("output/Makefile", "w+") do |test|
+files = [ ]
+Dir["tests/*.xml"].each do |file|
   filebasename = File.basename(file, ".xml")
-  puts "Compiling #{filebasename} test suits"
-  `gmcs -r:Qutter.dll -debug #{filebasename}_write.cs`
-  `gmcs -r:Qutter.dll -debug #{filebasename}_read.cs`
-  `g++ \`pkg-config QtCore --libs --cflags\` #{filebasename}_write.c -o #{filebasename}_write`
-  `g++ \`pkg-config QtCore --libs --cflags\` #{filebasename}_read.c -o #{filebasename}_read`
-  test.puts "mono --debug #{filebasename}_write.exe"
-  test.puts "./#{filebasename}_read"
-  test.puts "./#{filebasename}_write"
-  test.puts "mono --debug #{filebasename}_read.exe"
+
+  files.push "#{filebasename}_write.exe"
+  files.push "#{filebasename}_read.exe"
+  files.push "#{filebasename}_write"
+  files.push "#{filebasename}_read"
+
+  test.puts "#{filebasename}_write.exe: #{filebasename}_write.cs"
+  test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_write.cs"
+  test.puts
+  test.puts "#{filebasename}_read.exe: #{filebasename}_read.cs"
+  test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_read.cs"
+  test.puts
+  test.puts "#{filebasename}_write: #{filebasename}_write.c"
+  test.puts "\tg++ \`pkg-config QtCore --libs --cflags\` #{filebasename}_write.c -o #{filebasename}_write"
+  test.puts
+  test.puts "#{filebasename}_read: #{filebasename}_read.c"
+  test.puts "\tg++ \`pkg-config QtCore --libs --cflags\` #{filebasename}_read.c -o #{filebasename}_read"
   test.puts
 end
+
+  test.puts "all: " + files.join(" ")
+  test.puts
+
+  test.puts "run: all"
+  files.each do |file|
+    test.puts "\t@echo #{file}"
+    if (file.ends_with(".exe"))
+      test.puts "\t@mono #{file}"
+    else
+      test.puts "\t@./#{file}"
+    end
+  end
+
 end

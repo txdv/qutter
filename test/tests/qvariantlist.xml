@@ -1,0 +1,37 @@
+<code>
+<cinclude><![CDATA[#include <QVariantList>
+#include <QString>]]></cinclude>
+<cwrite><![CDATA[
+  QVariantList list;
+  list.append(1);
+  list.append("test");
+  QString emptyString;
+  list.append(emptyString);
+  out << list;
+]]></cwrite>
+<cread><![CDATA[
+  QVariantList list;
+  in >> list;
+  assert(list.size() == 3);
+  assert(list[0] == 1);
+  assert(list[1] == "test");
+  QString emptyString;
+  assert(list[2] == emptyString);
+]]></cread>
+<cswrite><![CDATA[
+  List<QVariant> list = new List<QVariant>(new QVariant[] {
+    new QVariant(1),
+    new QVariant("test"),
+    new QVariant(typeof(string))
+  });
+  QTypeManager.Serialize(fs, list);
+]]></cswrite>
+<csread><![CDATA[
+  //List<QVariant> list;
+  //QTypeManager.Deserialize(fs, out list);
+  //Debug.Assert(list.Count == 3);
+  //Debug.Assert(list[0].GetValue<int>() == 1);
+  //Debug.Assert(list[1].GetValue<string>() == "test");
+  //Debug.Assert(list[2].GetValue<string>() == null);
+]]></csread>
+</code>

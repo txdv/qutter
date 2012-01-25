@@ -1,0 +1,25 @@
+<code>
+<cinclude><![CDATA[#include <QString>
+#include <QVariant>
+#include <iostream>
+]]></cinclude>
+<cwrite><![CDATA[
+  QString emptyString;
+  QVariant variant(emptyString);
+  out << variant;
+]]></cwrite>
+<cread><![CDATA[
+  QVariant variant;
+  in >> variant;
+  QString qstring("QString");
+  assert(variant.typeName() == qstring);
+]]></cread>
+<cswrite><![CDATA[
+    QVariant variant = new QVariant(typeof(string));
+    QTypeManager.Serialize(fs, variant);
+]]></cswrite>
+<csread><![CDATA[
+    QVariant variant;
+    QTypeManager.Deserialize(fs, out variant);
+]]></csread>
+</code>

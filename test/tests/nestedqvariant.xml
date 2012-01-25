@@ -1,0 +1,36 @@
+<code>
+<cinclude><![CDATA[
+#include <QVariant>
+#include <QVariantMap>
+]]></cinclude>
+<cwrite><![CDATA[
+  QVariantMap map = QVariantMap();
+  map["contents"] = "nesamone";
+  map["nesamone"] = 5;
+  out << QVariant(map);
+]]></cwrite>
+<cread><![CDATA[
+  QVariant v;
+  QVariantMap map;
+  in >> v;
+  map = v.value<QVariantMap>();
+  assert(map["contents"].value<QString>() == "nesamone");
+  assert(map["nesamone"].value<int>() == 5);
+]]></cread>
+<cswrite><![CDATA[
+    Dictionary<string, QVariant> map = new Dictionary<string, QVariant>();
+    map["contents"] = new QVariant("nesamone");
+    map["nesamone"] = new QVariant(5);
+    QTypeManager.Serialize(fs, new QVariant(map));
+]]></cswrite>
+<csread><![CDATA[
+    QVariant v;
+    QTypeManager.Deserialize(fs, out v);
+    var map = v.GetValue<Dictionary<string, QVariant>>();
+    Debug.Assert(map != null);
+
+    Debug.Assert(map["contents"].GetValue<string>() == "nesamone");
+    Debug.Assert(map["nesamone"].GetValue<int>() == 5);
+
+]]></csread>
+</code>
