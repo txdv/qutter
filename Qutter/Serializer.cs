@@ -52,15 +52,16 @@ namespace Qutter
     private static readonly IDictionary<Type,      Type> typeDict  = new Dictionary<Type,      Type>();
     private static readonly IDictionary<QMetaType, Type> metaTypes = new Dictionary<QMetaType, Type>();
     private static readonly IDictionary<Type, QMetaType> dnetTypes = new Dictionary<Type, QMetaType>();
-    
+
     private static void Register(Type type, Type metaTypeSerializer, QMetaType metaType)
     {
       typeDict[type] = metaTypeSerializer;
       if (!metaTypeSerializer.IsGenericType || (metaTypeSerializer.IsGenericType && type != type.GetGenericTypeDefinition())) {
         var o = metaTypeSerializer.GetConstructor(new Type[] { }).Invoke(new object[] { });
 
-        if (metaType == QMetaType.None)
+        if (metaType == QMetaType.None) {
           return;
+        }
         
         metaTypes[metaType] = type;
         dnetTypes[type]     = metaType;
@@ -220,7 +221,7 @@ namespace Qutter
     internal QVariant(object value, QMetaType type)
     {
       Value = value;
-      Type  = type;
+      Type = type;
     }
     
     public QVariant(object value)
@@ -238,8 +239,9 @@ namespace Qutter
     /// </summary>
     public T GetValue<T>()
     {
-      if (typeof(T) != Value.GetType())
+      if (typeof(T) != Value.GetType()) {
         return default(T);
+      }
       
       return (T)Value;
     }
@@ -382,9 +384,10 @@ namespace Qutter
     public List<T> Deserialize(EndianBinaryReader br, Type type)
     {
       int len = br.ReadInt32();
-      
-      if (len == -1)
-        return null; 
+
+      if (len == -1) {
+        return null;
+      }
 
       var listDef = type.GetGenericTypeDefinition().MakeGenericType(type.GetGenericArguments());
       List<T> list = (List<T>)listDef.GetConstructor(new Type[] {}).Invoke(new object[] { });
@@ -398,7 +401,7 @@ namespace Qutter
       return list;
     }
   }
-  
+
   public class QMapSerializer<T1, T2> : QMetaTypeSerializer<Dictionary<T1, T2>>
   {
     public void Serialize(EndianBinaryWriter bw, Dictionary<T1, T2> data)
@@ -421,9 +424,10 @@ namespace Qutter
     {
       int len = br.ReadInt32();
       
-      if (len == -1)
+      if (len == -1) {
         return null;
-      
+      }
+
       var mapType = type.GetGenericTypeDefinition().MakeGenericType(type.GetGenericArguments());
       Dictionary<T1, T2> map = (Dictionary<T1, T2>)mapType.GetConstructor(new Type[] {}).Invoke(new object[] { });
       
@@ -458,13 +462,12 @@ namespace Qutter
     public QVariant Deserialize(EndianBinaryReader br, Type type)
     {
       QMetaType metaType = (QMetaType)br.ReadUInt32();
+
       int n = br.BaseStream.ReadByte();
-      
       if (metaType == QMetaType.UserType) {
         byte[] byteData;
         QTypeManager.Deserialize(br.BaseStream, out byteData);
         string name = Encoding.ASCII.GetString(byteData, 0, byteData.Length - 1);
-
         Type t = QTypeManager.GetMetaTypeSerializer(name);
 
         if (t == null)
@@ -478,10 +481,11 @@ namespace Qutter
       if (n == 0) {
         data = QTypeManager.Deserialize(br, QTypeManager.GetType(metaType));
       }
-      
-      if (data == null)
+
+      if (data == null) {
         return new QVariant(data, metaType);
-      
+      }
+
       return new QVariant(data);
     }
   }
@@ -558,8 +562,10 @@ namespace Qutter
       if (isUTC == 1) {
         // TODO: do something about this
       }
-      
+
       return new DateTime(year, month, day, hour, minute, second, millis);
+    }
+  }
 
   public class QUShortSerializer : QMetaTypeSerializer<ushort>
   {
