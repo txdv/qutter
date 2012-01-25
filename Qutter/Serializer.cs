@@ -470,10 +470,15 @@ namespace Qutter
         string name = Encoding.ASCII.GetString(byteData, 0, byteData.Length - 1);
         Type t = QTypeManager.GetMetaTypeSerializer(name);
 
-        if (t == null)
+        if (t == null) {
           throw new Exception(string.Format("UserType({0}) not registered", name));
-        
-        object o = QTypeManager.Invoke(name, "Deserialize", new object[] { br, type });
+        }
+
+        if (t.GetMethod("Deserialize") != null) {
+          t = t.GetMethod("Deserialize").ReturnType;
+        }
+
+        object o = QTypeManager.Invoke(name, "Deserialize", new object[] { br, t });
         return new QVariant(o, QMetaType.UserType);
       }
       
