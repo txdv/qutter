@@ -478,8 +478,16 @@ namespace Qutter
       }
       
       object data = null;
-      if (n == 0) {
+
+      switch (metaType) {
+      case QMetaType.QVariantList:
         data = QTypeManager.Deserialize(br, QTypeManager.GetType(metaType));
+        break;
+      default:
+        if (n == 0) {
+          data = QTypeManager.Deserialize(br, QTypeManager.GetType(metaType));
+        }
+        break;
       }
 
       if (data == null) {
