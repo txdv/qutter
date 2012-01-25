@@ -7,12 +7,12 @@ Description
 The goal of Qutter is to provide serialization and deserialization
 of Qt and .NET objects. Objects from Qt are mapped to .NET objects
 like QString to string, QMap to Dictionary and so on. This library
-is usefull if you want have to communuicate with Qt applications
-which send serialized objects over the network and you dont want
-to have Qt installed or if you can't install it, a valid scenario
-would be a quassel client (distributed irc application, the
-client part) for WP7, since the WP7 is locked and only C# code is
-allowed to be run.
+is usefull if you want have to communicate with Qt applications
+which send serialized objects over the network and you don't want
+to have Qt installed or if you simply can't install it.
+A valid scenario would be a quassel client (distributed irc
+application, the client part) for WP7, since the WP7 is locked and
+only C# code is allowed to be run.
 
 Supported Qt objects.
 ---------------------
@@ -32,7 +32,6 @@ provided with this library.
 >  9. QByteArray   - byte[]
 > 10. QDate        - DateTime
 > 11. QTime        - TimeSpan
-> 
 > 12. QVariant     - QVariant
 > 13. QMap<T1, T2> - Dictionary<T1, T2>
 > 14. QList<T1>    - List<T1>
