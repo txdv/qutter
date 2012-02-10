@@ -52,6 +52,7 @@ namespace Qutter
     private static readonly IDictionary<Type,      Type> typeDict  = new Dictionary<Type,      Type>();
     private static readonly IDictionary<QMetaType, Type> metaTypes = new Dictionary<QMetaType, Type>();
     private static readonly IDictionary<Type, QMetaType> dnetTypes = new Dictionary<Type, QMetaType>();
+    private static readonly IDictionary<Type,      Type> userTypes = new Dictionary<Type,      Type>();
 
     private static void Register(Type type, Type metaTypeSerializer, QMetaType metaType)
     {
@@ -70,9 +71,15 @@ namespace Qutter
     
     private static readonly IDictionary<string, Type> userDefined = new Dictionary<string, Type>();
     
-    public static void RegisterUserDefinedMetaType(string typeName, Type metaTypeSerializer)
+    public static void Register(string typeName, Type metaTypeSerializer)
     {
       userDefined[typeName] = metaTypeSerializer;
+
+      var type = metaTypeSerializer.GetMethod("Deserialize").ReturnType;
+
+      if (!type.IsValueType) {
+        userTypes[type] = metaTypeSerializer;
+      }
     }
     
     static QTypeManager()
@@ -102,6 +109,10 @@ namespace Qutter
     
     internal static QMetaType GetType(Type type)
     {
+      if (userTypes.ContainsKey(type)) {
+        return QMetaType.UserType;
+      }
+
       if (!dnetTypes.ContainsKey(type)) {
         throw new Exception(string.Format("No such dnetType in cache {0})", type));
       }
@@ -118,6 +129,10 @@ namespace Qutter
     
     internal static Type GetMetaTypeSerializer(Type type)
     {
+      if (userTypes.ContainsKey(type)) {
+        return userTypes[type];
+      }
+
       if (typeDict.ContainsKey(type))
         return typeDict[type];
       
@@ -223,7 +238,12 @@ namespace Qutter
       Value = value;
       Type = type;
     }
-    
+
+    public QVariant(Type type)
+      : this(null, QTypeManager.GetType(type))
+    {
+    }
+
     public QVariant(object value)
       : this(value, QTypeManager.GetType(value.GetType()))
     {
@@ -231,6 +251,11 @@ namespace Qutter
     
     public object Value { get; protected set; }
     public QMetaType Type { get; protected set; }
+    public bool IsUserType {
+      get {
+        return Type == QMetaType.UserType;
+      }
+    }
     
     /// <summary>
     /// Qt like function for retrieving the value
@@ -361,9 +386,9 @@ namespace Qutter
     public byte[] Deserialize(EndianBinaryReader br, Type type)
     {
       int len = br.ReadInt32();
-      if (len == -1)
-       return null; 
-      
+      if (len == -1) {
+       return null;
+      }
       return br.ReadBytes(len);
     }
   }  
@@ -455,6 +480,12 @@ namespace Qutter
         bw.Write((byte)1);
       } else {
         bw.Write((byte)0);
+        if (data.IsUserType) {
+          string name = "BufferInfo";
+          byte[] nameBytes = new byte[name.Length + 1];
+          Encoding.ASCII.GetBytes(name).CopyTo(nameBytes, 0);
+          QTypeManager.Serialize(bw, nameBytes);
+        }
         QTypeManager.Serialize(bw, data.Value);
       }
     }

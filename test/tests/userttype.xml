@@ -1,0 +1,60 @@
+<code>
+<ccommon><![CDATA[
+
+]]></ccommon>
+<cinclude><![CDATA[
+#include <QString>
+]]></cinclude>
+<cwrite><![CDATA[
+  out << QString("test");
+]]></cwrite>
+<cread>
+  QString s;
+  in >> s;
+  assert(s == "test");
+</cread>
+<cscommon><![CDATA[
+class BufferInfo {
+  public int First { get; protected set; }
+  public int Second { get; protected set; }
+
+  public BufferInfo(int first, int second)
+  {
+    First = first;
+    Second = second;
+  }
+}
+
+class BufferInfoSerializer : QMetaTypeSerializer<BufferInfo>
+{
+  public void Serialize(MiscUtil.IO.EndianBinaryWriter bw, BufferInfo bufferInfo)
+  {
+    bw.Write(bufferInfo.First);
+    bw.Write(bufferInfo.Second);
+  }
+
+  public BufferInfo Deserialize(MiscUtil.IO.EndianBinaryReader br, Type type)
+  {
+    return new BufferInfo(br.ReadInt32(), br.ReadInt32());
+  }
+}
+]]></cscommon>
+<cswrite>
+    QTypeManager.Register("BufferInfo", typeof(BufferInfoSerializer));
+
+    QVariant var = new QVariant(new BufferInfo(1, 2));
+    QTypeManager.Serialize(fs, var);
+</cswrite>
+<csread>
+    QTypeManager.Register("BufferInfo", typeof(BufferInfoSerializer));
+
+    QVariant var;
+    QTypeManager.Deserialize(fs, out var);
+
+    Debug.Assert(var.Type == QMetaType.UserType);
+    Debug.Assert(var.Value is BufferInfo);
+    var bi = var.Value as BufferInfo;
+    Debug.Assert(bi.First == 1);
+    Debug.Assert(bi.Second == 2);
+</csread>
+</code>

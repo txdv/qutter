@@ -1,0 +1,20 @@
+<code>
+<cinclude><![CDATA[#include <QString>]]></cinclude>
+<cwrite><![CDATA[
+  QString s = QString("test");
+  out << s;
+]]></cwrite>
+<cread>
+  QString s;
+  in >> s;
+  assert(s == "test");
+</cread>
+<cswrite>
+    QTypeManager.Serialize(bw, "test");
+</cswrite>
+<csread>
+    string str = null;
+    QTypeManager.Deserialize(br, ref str);
+    Debug.Assert(str == "test");
+</csread>
+</code>
