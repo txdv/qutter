@@ -1,0 +1,3 @@
+[submodule "Mono.Terminal"]
+	path = Mono.Terminal
+	url = git@github.com:txdv/Mono.Terminal.git

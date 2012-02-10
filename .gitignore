@@ -1,0 +1,5 @@
+bin/
+test/output/
+*.swp
+*.pidb
+*.userprefs
