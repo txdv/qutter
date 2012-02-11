@@ -39,17 +39,22 @@ namespace Qutter.App
 				Entry.Position = 0;
 			};
 
-			Client.BufferSyncer.Synced += (obj) => {
-				Entry.Prefix = string.Format("[{0}] ", Client.BufferSyncer.Active.BufferInfo.Name);
+			Client.BufferSyncer.Synced += (list) => {
+				SetPrefix(Client.BufferSyncer.Active);
 			};
 
-			Client.BufferSyncer.ActiveChanged += (i) => {
-				Entry.Prefix = string.Format("[{0}] ", i.BufferInfo.Name);
-			};
+			Client.BufferSyncer.ActiveChanged += SetPrefix;
 
 			this.Add(ChatViewManager, Box.Setting.Fill);
 			this.Add(StatusBar, Box.Setting.Size);
 			this.Add(Entry, Box.Setting.Size);
+		}
+
+		public void SetPrefix(Buffer buffer)
+		{
+			string name = buffer.BufferInfo.Name;
+			name = string.IsNullOrEmpty(name) ? "(status)" : name;
+			Entry.Prefix = string.Format("[{0}] ", name);
 		}
 
 		public override bool ProcessKey(int key)
