@@ -102,7 +102,7 @@ namespace Qutter.App
 
 		protected string GetChannels(int bg, int accent, int normal, int braces)
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder(ColorPair.From(normal, bg).ToString());
 			string activename = Client.BufferSyncer.Active.BufferInfo.Name;
 			activename = (string.IsNullOrEmpty(activename) ? "status" : activename);
 
