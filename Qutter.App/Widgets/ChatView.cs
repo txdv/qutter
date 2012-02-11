@@ -180,7 +180,12 @@ namespace Qutter.App
 				for (element = Position; element != null && h < Height; element = element.Next) {
 					entry = element.Value;
 
-					entry.SetDim(x, h, w, entry.CalculateHeight(w));
+					int th = entry.CalculateHeight(w);
+					if (h + th > Height) {
+						entry.SetDim(x, h, w, Height - h);
+					} else {
+						entry.SetDim(x, h, w, th);
+					}
 
 					entry.Redraw();
 
