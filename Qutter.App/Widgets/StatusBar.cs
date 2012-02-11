@@ -6,23 +6,6 @@ using Manos.IO;
 
 namespace Qutter.App
 {
-	public class Attribute
-	{
-		public Attribute(ColorPair pair)
-		{
-			Pair = pair;
-		}
-
-		public Attribute()
-			: this(ColorPair.From(-1, -1))
-		{
-		}
-
-		public ColorPair Pair { get; protected set; }
-		public bool Bold { get; protected set; }
-		public bool Underline { get; protected set; }
-	}
-
 	public class StatusBar : Widget
 	{
 		public QuasselClient Client { get; protected set; }
@@ -40,80 +23,45 @@ namespace Qutter.App
 			}).Start();
 		}
 
-		protected string EscapeSpecials(string str, int normal, int accent, int background)
+		protected ColorString EscapeSpecials(string str, Func<char, ColorPair> exchange)
 		{
-			return EscapeSpecials(str, ColorPair.From(accent, background), ColorPair.From(normal, background));
-		}
+			if (str == null) {
+				return null;
+			} else if (str.Length == 0) {
+				return null;
+			}
 
-		protected string EscapeSpecials(string str, ColorPair selection, ColorPair normal)
-		{
-			return EscapeSpecials(str, (c) => {
-				return string.Format("\x0000{0},{1} {2}\x000{3},{4} ", selection.Foreground,
-					selection.Background, c, normal.Foreground, normal.Background);
-			});
-		}
-
-		protected string Colorize(string str, int fg, int bg)
-		{
-			return Colorize(str, ColorPair.From(fg, bg));
-		}
-
-		protected string Colorize(string str, ColorPair normal)
-		{
-			return string.Format("\0000{0},{1} {2}", normal.Foreground, normal.Background, str);
-		}
-
-		protected string EscapeSpecials(string str, Func<char, string> exchange)
-		{
-			string ret = "";
-			foreach (var c in str) {
-				if (!Char.IsLetter(c) && !Char.IsDigit(c)) {
-					ret += exchange(c);
-				} else {
-					ret += c;
+			char ch = str[0];
+			ColorPair current = exchange(ch);
+			StringBuilder sb = new StringBuilder(current.ToString());
+			sb.Append(current);
+			sb.Append(ch);
+			for (int i = 1; i < str.Length; i++) {
+				ch = str[i];
+				ColorPair next = exchange(ch);
+				if (current != next) {
+					sb.Append(next.ToString());
+					current = next;
 				}
+				sb.Append(ch);
 			}
-			return ret;
+			return new ColorString(sb.ToString());
 		}
 
-		protected string Time(DateTime time, int accent, int normal, int brace, int background)
+		protected ColorString EscapeSpecials(string str, int accent, int normal, int brace, int background)
 		{
-			var br = ColorPair.From(brace, background);
-			var nr = ColorPair.From(normal, background);
-			var spec = ColorPair.From(accent, background);
-			return Time(time, br, nr, spec);
-		}
-
-		protected string Time(DateTime time, ColorPair br, ColorPair nr, ColorPair spec)
-		{
-			var t = EscapeSpecials(time.ToString(), spec, nr);
-			return string.Format("{0}[{1}{2}{3}]{0}", br, nr, t, br);
-		}
-
-		protected string Fill(string str, ColorPair pair)
-		{
-			int len = ColorString.CalculateLength(str);
-			string s = "";
-			for (int i = len; i < Width; i++) {
-				s += " ";
-			}
-			return string.Format("\x0000{0},{1} {2}{3}", pair.Foreground, pair.Background, str, s);
-		}
-
-		protected string GetChannels(int bg, int accent, int normal, int braces)
-		{
-			StringBuilder sb = new StringBuilder(ColorPair.From(normal, bg).ToString());
-			string activename = Client.BufferSyncer.Active.BufferInfo.Name;
-			activename = (string.IsNullOrEmpty(activename) ? "status" : activename);
-
-			foreach (var buffer in Client.BufferSyncer) {
-				var info = buffer.BufferInfo;
-				bool active = buffer == Client.BufferSyncer.Active;
-				string name = (info.Type == BufferInfo.BufferType.Status ? "status" : info.Name);
-				name = EscapeSpecials(name, normal, accent, bg);
-				sb.Append(string.Format("{1} ", 255, name));
-			}
-			return sb.ToString();
+			return EscapeSpecials(str, (ch) => {
+				switch (ch) {
+				case '[':
+				case ']':
+					return ColorPair.From(brace, background);
+				default:
+					if (Char.IsDigit(ch) || Char.IsLetter(ch)) {
+						return ColorPair.From(normal, background);
+					}
+					return ColorPair.From(accent, background);
+				}
+			});
 		}
 
 		public override void Redraw()
@@ -124,15 +72,22 @@ namespace Qutter.App
 			int normal = 255;
 			int braces = 241;
 
-			Fill(' ');
+			StringBuilder sb = new StringBuilder();
 
-			string str = "";
+			sb.Append(string.Format("[{0}] ", DateTime.Now));
+
 			if (Client.BufferSyncer.IsSynced) {
-				str = GetChannels(bg, accent, normal, braces);
-			}
+				var network = Client.NetworkCollection.Get(Client.BufferSyncer.Active.BufferInfo.NetworkId);
+				sb.Append(string.Format("[Lat: {0}] ", network.Latency));
 
-			str = Time(DateTime.Now, accent, normal, 241, bg) + " " + str;
-			ColorString.Draw(this, Fill(str, ColorPair.From(normal, bg)), 0, 0, Width, Height);
+				foreach (var buffer in Client.BufferSyncer) {
+					var info = buffer.BufferInfo;
+					string name = (info.Type == BufferInfo.BufferType.Status ? "status" : info.Name);
+					sb.Append(name);
+					sb.Append(" ");
+				}
+			}
+			EscapeSpecials(sb.ToString(), accent, normal, braces, bg).Fill(this);
 			Curses.attron(ColorPair.From(-1, -1).Attribute);
 		}
 	}
