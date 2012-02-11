@@ -35,11 +35,9 @@ namespace Qutter.App
 		public CoreAccount[] Accounts { get; protected set; }
 		public int AutoConnectAccount { get; protected set; }
 
-		public Settings()
+		public Settings(string file)
 		{
-			string file = "/home/bentkus/.config/quassel-irc.org/quasselclient.conf";
 			var source = new IniConfigSource(file);
-
 
 			var config = source.Configs["Config"];
 
