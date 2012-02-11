@@ -61,6 +61,7 @@
     <Compile Include="Quassel\Epoch.cs" />
     <Compile Include="ActiveList.cs" />
     <Compile Include="Themes\Default.cs" />
+    <Compile Include="Themes\Mono.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Qutter\Qutter.csproj">
