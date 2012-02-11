@@ -23,34 +23,9 @@ namespace Qutter.App
 			}).Start();
 		}
 
-		protected ColorString EscapeSpecials(string str, Func<char, ColorPair> exchange)
-		{
-			if (str == null) {
-				return null;
-			} else if (str.Length == 0) {
-				return null;
-			}
-
-			char ch = str[0];
-			ColorPair current = exchange(ch);
-			StringBuilder sb = new StringBuilder(current.ToString());
-			sb.Append(current);
-			sb.Append(ch);
-			for (int i = 1; i < str.Length; i++) {
-				ch = str[i];
-				ColorPair next = exchange(ch);
-				if (current != next) {
-					sb.Append(next.ToString());
-					current = next;
-				}
-				sb.Append(ch);
-			}
-			return new ColorString(sb.ToString());
-		}
-
 		protected ColorString EscapeSpecials(string str, int accent, int normal, int brace, int background)
 		{
-			return EscapeSpecials(str, (ch) => {
+			return ColorString.Escape(str, (ch) => {
 				switch (ch) {
 				case '[':
 				case ']':
