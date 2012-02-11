@@ -9,7 +9,8 @@ namespace Qutter.App
 {
 	public class MainClass
 	{
-		public static MainWindowTemplate MainWindow { get; set; }
+		public static MainWindowTemplate MainWindow { get; private set; }
+		public static ThemeManger ThemeManager { get; private set; }
 
 		public static void Main(string[] args)
 		{
@@ -25,8 +26,9 @@ namespace Qutter.App
 
 			var qc = new QuasselClient(coreConnection);
 
-			var theme = new Qutter.App.Themes.Default.Theme();
-			MainWindow = theme.CreateMainWindow(qc);
+			ThemeManager = new ThemeManger();
+
+			MainWindow = ThemeManager.Default.CreateMainWindow(qc);
 
 			AsyncWatcher<QVariant> listnotifier = new AsyncWatcher<QVariant>(Application.Context, (packet) => {
 				qc.Handle(packet);

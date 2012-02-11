@@ -4,8 +4,11 @@ using Mono.Terminal;
 
 namespace Qutter.App.Themes.Default
 {
-	public class Theme
+	public class Theme : ITheme
 	{
+		public string Name { get { return "qutter default"; } }
+		public string Author { get { return "Andrius Bentkus"; } }
+
 		public MainWindowTemplate CreateMainWindow(QuasselClient client)
 		{
 			return new MainWindow(client);
@@ -26,6 +29,7 @@ namespace Qutter.App.Themes.Default
 				}
 			});
 		}
+
 	}
 
 	public class MainWindow : MainWindowTemplate
