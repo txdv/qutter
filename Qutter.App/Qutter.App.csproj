@@ -59,6 +59,7 @@
     <Compile Include="Quassel\QuasselClient.cs" />
     <Compile Include="Quassel\Epoch.cs" />
     <Compile Include="ActiveList.cs" />
+    <Compile Include="Themes\Default.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Qutter\Qutter.csproj">
@@ -91,5 +92,6 @@
     <Folder Include="ThemeManager\" />
     <Folder Include="Quassel\" />
     <Folder Include="..\" />
+    <Folder Include="Themes\" />
   </ItemGroup>
 </Project>

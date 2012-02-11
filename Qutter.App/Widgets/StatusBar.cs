@@ -6,11 +6,11 @@ using Manos.IO;
 
 namespace Qutter.App
 {
-	public class StatusBar : Widget
+	public class StatusBarTemplate : Widget
 	{
 		public QuasselClient Client { get; protected set; }
 
-		public StatusBar(QuasselClient client)
+		public StatusBarTemplate(QuasselClient client)
 		{
 			Client = client;
 
@@ -23,29 +23,9 @@ namespace Qutter.App
 			}).Start();
 		}
 
-		protected ColorString EscapeSpecials(string str, int accent, int normal, int brace, int background)
-		{
-			return ColorString.Escape(str, (ch) => {
-				switch (ch) {
-				case '[':
-				case ']':
-					return ColorPair.From(brace, background);
-				default:
-					if (Char.IsDigit(ch) || Char.IsLetter(ch)) {
-						return ColorPair.From(normal, background);
-					}
-					return ColorPair.From(accent, background);
-				}
-			});
-		}
-
 		public override void Redraw()
 		{
 			base.Redraw();
-			int bg = 237;
-			int accent = 202;
-			int normal = 255;
-			int braces = 241;
 
 			StringBuilder sb = new StringBuilder();
 
@@ -62,7 +42,17 @@ namespace Qutter.App
 					sb.Append(" ");
 				}
 			}
-			EscapeSpecials(sb.ToString(), accent, normal, braces, bg).Fill(this);
+			DrawStatusBar(sb.ToString());
+		}
+
+		public virtual void DrawStatusBar(string text)
+		{
+			Fill(text);
+		}
+
+		public virtual void DrawStatusBar(ColorString text)
+		{
+			text.Fill(this);
 			Curses.attron(ColorPair.From(-1, -1).Attribute);
 		}
 	}

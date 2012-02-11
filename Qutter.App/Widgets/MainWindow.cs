@@ -5,20 +5,22 @@ using Manos.IO;
 
 namespace Qutter.App
 {
-	public class MainWindow : VBox
+	public class MainWindowTemplate : VBox
 	{
 		public QuasselClient Client { get; protected set; }
 		public ChatViewManager ChatViewManager { get; protected set; }
-		public StatusBar StatusBar { get; protected set; }
-		public StatusEntry Entry { get; protected set; }
+		public StatusBarTemplate StatusBar { get; protected set; }
+		public EntryTemplate Entry { get; protected set; }
 
-		public MainWindow(QuasselClient client)
+		public MainWindowTemplate(QuasselClient client, StatusBarTemplate bar, EntryTemplate entry)
 		{
 			Client = client;
+			StatusBar = bar;
+			Entry = entry;
 
 			ChatViewManager = new ChatViewManager(client, new ChatView());
-			StatusBar = new StatusBar(client) { Height = 1 };
-			Entry = new StatusEntry() { Height = 1, Prefix = "[syncing] " };
+
+			SetPrefix("[syncing]");
 
 			Entry.Enter += delegate {
 				if (Entry.Text.Length == 0) {
@@ -50,11 +52,23 @@ namespace Qutter.App
 			this.Add(Entry, Box.Setting.Size);
 		}
 
-		public void SetPrefix(Buffer buffer)
+		public MainWindowTemplate(QuasselClient client)
+			: this(client,
+				   new StatusBarTemplate(client) { Height = 1 },
+				   new EntryTemplate() { Height = 1 })
+		{
+		}
+
+		public virtual void SetPrefix(Buffer buffer)
 		{
 			string name = buffer.BufferInfo.Name;
 			name = string.IsNullOrEmpty(name) ? "(status)" : name;
-			Entry.Prefix = string.Format("[{0}] ", name);
+			SetPrefix(string.Format("[{0}] ", name));
+		}
+
+		public virtual void SetPrefix(string prefix)
+		{
+			Entry.Prefix = prefix;
 		}
 
 		public override bool ProcessKey(int key)

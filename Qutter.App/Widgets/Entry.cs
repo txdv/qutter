@@ -236,24 +236,30 @@ namespace Qutter.App
 		}
 	}
 
-	public class StatusEntry : HistoryEntry
+	public class EntryTemplate : HistoryEntry
 	{
-		string prefix;
 		public string Prefix {
-			get { return prefix ?? string.Empty; }
-			set { prefix = value; this.Invalid = true; }
+			get { return ColorPrefix.String; }
+			set { ColorPrefix = new ColorString(value); }
+		}
+
+		ColorString prefix;
+		public ColorString ColorPrefix {
+			get { return prefix; }
+			set { prefix = value; Invalid = true; }
 		}
 
 		public override void Redraw()
 		{
 			Invalid = false;
-			Fill(string.Concat(Prefix, Text));
-			SetCursorPosition();
+			ColorPrefix.Draw(this, 0, 0, ColorPrefix.Length, 1);
+			Curses.attron(ColorPair.From(-1, -1).Attribute);
+			Fill(Text, ColorPrefix.Length, 0);
 		}
 
-		public override void SetCursorPosition ()
+		public override void SetCursorPosition()
 		{
-			Move(Prefix.Length + Text.Length, 0);
+			Move(ColorPrefix.Length + Text.Length, 0);
 		}
 	}
 }
