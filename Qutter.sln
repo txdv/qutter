@@ -49,9 +49,9 @@ Global
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.FileWidth = 120
-		$1.TabWidth = 2
+		$1.TabWidth = 4
 		$1.RemoveTrailingWhitespace = True
-		$1.inheritsSet = VisualStudio
+		$1.inheritsSet = Mono
 		$1.inheritsScope = text/plain
 		$1.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $2
