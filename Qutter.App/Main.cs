@@ -30,11 +30,11 @@ namespace Qutter.App
 
 			MainWindow = ThemeManager.Default.CreateMainWindow(qc);
 
-			AsyncWatcher<QVariant> listnotifier = new AsyncWatcher<QVariant>(Application.Context, (packet) => {
-				qc.Handle(packet);
-			});
+			AsyncWatcher<QVariant> listnotifier = new AsyncWatcher<QVariant>(Application.Context, (packet) => qc.Handle(packet));
+			AsyncWatcher<Exception> excenotifier = new AsyncWatcher<Exception>(Application.Context, (exce) => qc.Handle(exce));
 
 			listnotifier.Start();
+			excenotifier.Start();
 
 			var nt = new Thread((obj) => {
 				coreConnection.ReceivePacket += (packet) => {
@@ -42,6 +42,7 @@ namespace Qutter.App
 				};
 
 				coreConnection.Exception += (exception) => {
+					excenotifier.Send(exception);
 				};
 
 				coreConnection.Connect();
