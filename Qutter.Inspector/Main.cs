@@ -35,19 +35,9 @@ namespace Qutter.Inspector
 			var sourceStream = source.GetStream();
 			var destinationStream = destination.GetStream();
 
-			SourceThread = new Thread((o) => {
-				// Use this for unspecfici threads
-				/*
-				byte[] buffer = new byte[BufferSize];
-				int size;
-				while ((size = sourceStream.Read(buffer, 0, 512)) > 0) {
-					OnSend(buffer, size);
-					destinationStream.Write(buffer, 0, size);
-				}
-				*/
-
-				MiscUtil.IO.EndianBinaryReader br = new MiscUtil.IO.EndianBinaryReader(MiscUtil.Conversion.EndianBitConverter.Big, sourceStream);
-				MiscUtil.IO.EndianBinaryWriter bw = new MiscUtil.IO.EndianBinaryWriter(MiscUtil.Conversion.EndianBitConverter.Big, destinationStream);
+			Action<Stream, Stream> move = (src, dst) => {
+				MiscUtil.IO.EndianBinaryReader br = new MiscUtil.IO.EndianBinaryReader(MiscUtil.Conversion.EndianBitConverter.Big, src);
+				MiscUtil.IO.EndianBinaryWriter bw = new MiscUtil.IO.EndianBinaryWriter(MiscUtil.Conversion.EndianBitConverter.Big, dst);
 				while (true) {
 					int len = br.ReadInt32();
 					var packet = br.ReadBytes(len);
@@ -55,24 +45,11 @@ namespace Qutter.Inspector
 					bw.Write(len);
 					bw.Write(packet);
 				}
-			});
+			};
 
-			DestinationThread = new Thread((o) => {
-				MiscUtil.IO.EndianBinaryReader br = new MiscUtil.IO.EndianBinaryReader(MiscUtil.Conversion.EndianBitConverter.Big, destinationStream);
-				MiscUtil.IO.EndianBinaryWriter bw = new MiscUtil.IO.EndianBinaryWriter(MiscUtil.Conversion.EndianBitConverter.Big, sourceStream);
-				//BinaryReader br = new BinaryReader(destinationStream, Encoding.BigEndianUnicode);
-				//BinaryWriter bw = new BinaryWriter(sourceStream, Encoding.BigEndianUnicode);
-				//BinaryReader brr = new BinaryReader(destinationStream);
-				while (true) {
-					int len = br.ReadInt32();
-					//var packet = br.ReadBytes(len);
-					var packet = br.ReadBytes(len);
-					OnReceive(packet);
-					bw.Write(len);
-					bw.Write(packet);
-				}
-			});
+			SourceThread = new Thread((o) => move(sourceStream, destinationStream));
 			SourceThread.Start();
+			DestinationThread = new Thread((o) => move(destinationStream, sourceStream));
 			DestinationThread.Start();
 		}
 
@@ -117,14 +94,7 @@ namespace Qutter.Inspector
 		public static void Main(string[] args)
 		{
 			QuasselTypes.Init();
-			Run (args);
-			return;
-			while (true) {
-				try {
-					Run(args);
-				} catch {
-				}
-			}
+			Run(args);
 		}
 
 		public static void Run(string[] args)
@@ -136,7 +106,7 @@ namespace Qutter.Inspector
 			TcpClient destination = new TcpClient();
 			destination.Connect("127.0.0.1", 4242);
 
-			var si = new StreamInspector(source,destination);
+			var si = new StreamInspector(source, destination);
 
 			si.Receive += (buffer) => Handle("<-", buffer);
 			si.Send += (buffer) => Handle("->", buffer);
