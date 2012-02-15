@@ -231,56 +231,6 @@ namespace Qutter
     }
   }
   
-  public class QVariant
-  {
-    public QVariant(object value, string userTypeName)
-    {
-      Value = value;
-      Type = QMetaType.UserType;
-      UserTypeName = userTypeName;
-    }
-
-    public QVariant(object value, QMetaType type)
-    {
-      Value = value;
-      Type = type;
-    }
-
-    public QVariant(Type type)
-      : this(null, QTypeManager.GetType(type))
-    {
-    }
-
-    public QVariant(object value)
-      : this(value, QTypeManager.GetType(value.GetType()))
-    {
-    }
-    
-    public object Value { get; protected set; }
-    public QMetaType Type { get; protected set; }
-    public bool IsUserType {
-      get {
-        return Type == QMetaType.UserType;
-      }
-    }
-
-    public string UserTypeName { get; protected set; }
-    
-    /// <summary>
-    /// Qt like function for retrieving the value
-    /// returns null, if the types expected type
-    /// differs from the actual
-    /// </summary>
-    public T GetValue<T>()
-    {
-      if (typeof(T) != Value.GetType()) {
-        return default(T);
-      }
-      
-      return (T)Value;
-    }
-  }
-  
   public interface QMetaTypeSerializer<T>
   {
     void Serialize(EndianBinaryWriter bw, T data);

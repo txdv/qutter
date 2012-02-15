@@ -316,74 +316,10 @@ namespace Qutter.App
 			}
 		}
 
-		internal static string Show(object o)
+		public string Show(object o)
 		{
-			return Show(o, 0);
+			return QVariant.Inspect(o);
 		}
-
-		internal static string Show(object o, int level)
-		{
-			if (o == null) {
-				return "(null)";
-			}
-
-			if (o is Dictionary<string, QVariant>) {
-				string ret = "{ ";
-				foreach (var k in (Dictionary<string, QVariant>)o) {
-					ret += string.Format("(\"{0}\", {1}), ", k.Key, Show(k.Value, level + 1));
-				}
-				return ret + " }";
-			} else if (o is QVariant) {
-				QVariant var = o as QVariant;
-
-				return string.Format("QVariant({0}, {1})", var.Type, Show(var.Value, level + 1));
-				/*
-				if (var.Value == null) {
-					return string.Format("{0}(null)", var.GetType().ToString());
-				} else {
-					return Show((o as QVariant).Value, level);
-				}
-				*/
-			} else if (o is List<QVariant>) {
-				string ret = "[ ";
-				bool first = true;
-				var list = o as List<QVariant>;
-				for (int i = 0; i < list.Count; i++) {
-					QVariant le = list[i];
-					if (first && le.Value is int) {
-						first = false;
-						ret += string.Format("{0}", (RequestType)le.Value);
-					} else {
-						first = false;
-						ret += string.Format("{0}", Show(le, level + 1));
-					}
-					bool last = list.Count == i + 1;
-					if (!last) {
-						ret += ", ";
-					}
-				}
-				return ret + " ]";
-			} else if (o is string) {
-				return string.Format("\"{0}\"", o);
-			} else if (o is byte[]) {
-				return string.Format("byte[] \"{0}\"", Encoding.ASCII.GetString(o as byte[]));
-			}
-			return o.ToString();
-		}
-/*
-		public static void List(QVariant v)
-		{
-			if (v.Value is Dictionary<string, QVariant>) {
-				foreach (var kvp in v.GetValue<Dictionary<string, QVariant>>()) {
-					Console.WriteLine("{0}({1}) = {2}", kvp.Key, kvp.Value.Type, kvp.Value.Value);
-				}
-			} else if (v.Value is List<QVariant>) {
-				foreach (QVariant d in v.GetValue<List<QVariant>>()) {
-					Console.WriteLine("{0}", d.Value);
-				}
-			}
-		}
-		*/
 	}
 }
 

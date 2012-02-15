@@ -127,21 +127,6 @@ namespace Qutter.Inspector
 			}
 		}
 
-		/*
-			QVariant qvar = new QVariant(new BufferInfo(42, 69, BufferInfo.BufferType.Status, "1234567890"));
-
-			MemoryStream m = new MemoryStream();
-			QTypeManager.Serialize(m, qvar);
-			m.Flush();
-			m.Seek(0, SeekOrigin.Begin);
-			Console.WriteLine(inspect(m.ToArray()));
-
-			QVariant qvar2;
-
-
-			QTypeManager.Deserialize(m, out qvar2);
-			Console.WriteLine (MessageParser.Show(qvar2));
-		 */
 		public static void Run(string[] args)
 		{
 			TcpListener listener = new TcpListener(IPAddress.Any, 7000);
@@ -153,36 +138,23 @@ namespace Qutter.Inspector
 
 			var si = new StreamInspector(source,destination);
 
-			si.Receive += (buffer) => {
-				/*
-				MemoryStream ms = new MemoryStream(buffer);
-				ms.Seek(0, SeekOrigin.Begin);
-				object o;
-				try {
-					//Console.WriteLine (buffer.Length);
-					string ret = MessageParser.Show(QTypeManager.Deserialize<QVariant>(ms));
-					Console.WriteLine("-> {0}", ret);
-				} catch (Exception exception) {
-					Console.WriteLine ("-> failed ({0})", buffer.Length);
-					return;
-				}*/
-			};
+			si.Receive += (buffer) => Handle("<-", buffer);
+			si.Send += (buffer) => Handle("->", buffer);
+		}
 
-			si.Receive += (buffer) => {
-			//si.Send += (buffer) => {
-				MemoryStream ms = new MemoryStream(buffer);
-				ms.Seek(0, SeekOrigin.Begin);
-				try {
-					var o = QTypeManager.Deserialize<QVariant>(ms);
-					//string ret = MessageParser.Show(o);
-					//Console.WriteLine("-> {0}", ret);
-				} catch (Exception exception) {
-					Console.WriteLine ("-> failed ({0})", buffer.Length);
-					Console.WriteLine (inspect(buffer));
-					Console.WriteLine (exception);
-					return;
-				}
-			};
+		public static void Handle(string prefix, byte[] buffer)
+		{
+			MemoryStream ms = new MemoryStream(buffer);
+			ms.Seek(0, SeekOrigin.Begin);
+			try {
+				string ret = QVariant.Inspect(QTypeManager.Deserialize<QVariant>(ms));
+				Console.WriteLine("{0} {1}", prefix, QVariant.Inspect(ret));
+			} catch (Exception exception) {
+				Console.WriteLine ("{0} failed ({1})", prefix, buffer.Length);
+				Console.WriteLine (inspect(buffer));
+				Console.WriteLine (exception);
+				return;
+			}
 		}
 	}
 }
