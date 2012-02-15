@@ -233,7 +233,14 @@ namespace Qutter
   
   public class QVariant
   {
-    internal QVariant(object value, QMetaType type)
+    public QVariant(object value, string userTypeName)
+    {
+      Value = value;
+      Type = QMetaType.UserType;
+      UserTypeName = userTypeName;
+    }
+
+    public QVariant(object value, QMetaType type)
     {
       Value = value;
       Type = type;
@@ -256,6 +263,8 @@ namespace Qutter
         return Type == QMetaType.UserType;
       }
     }
+
+    public string UserTypeName { get; protected set; }
     
     /// <summary>
     /// Qt like function for retrieving the value
@@ -481,7 +490,7 @@ namespace Qutter
       } else {
         bw.Write((byte)0);
         if (data.IsUserType) {
-          string name = "BufferInfo";
+          string name = data.UserTypeName;
           byte[] nameBytes = new byte[name.Length + 1];
           Encoding.ASCII.GetBytes(name).CopyTo(nameBytes, 0);
           QTypeManager.Serialize(bw, nameBytes);
@@ -510,7 +519,7 @@ namespace Qutter
         }
 
         object o = QTypeManager.Invoke(name, "Deserialize", new object[] { br, t });
-        return new QVariant(o, QMetaType.UserType);
+        return new QVariant(o, name);
       }
       
       object data = null;

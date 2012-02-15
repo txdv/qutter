@@ -113,22 +113,6 @@ namespace Qutter.App
 			ns.Flush();
 		}
 
-		/*
-		public void RequestBacklog(int buffer, int firstMsgId, int lastMsgId, int maxAmount) {
-			List<QVariant> packet = new List<QVariant>();
-			packet.Add(new QVariant((int)RequestType.Sync));
-			packet.Add(new QVariant("BacklogManager"));
-			packet.Add(new QVariant(""));
-			packet.Add(new QVariant("requestBacklog"));
-			packet.Add(new QVariant(buffer));
-			packet.Add(new QVariant(firstMsgId));
-			packet.Add(new QVariant(lastMsgId));
-			packet.Add(new QVariant(maxAmount));
-			packet.Add(new QVariant(0));
-			Send(packet);
-		}
-		*/
-
 		List<QVariant> PacketList(RequestType type, params QVariant[] obj)
 		{
 			List<QVariant> packet = new List<QVariant>();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Qutter.App
 {
@@ -60,32 +61,62 @@ namespace Qutter.App
 
 		public void Handle(Dictionary<string, QVariant> map)
 		{
-			if (map.ContainsKey("SessionState")) {
-				MainClass.MainWindow.ChatViewManager.Debug(Show(map));
-				var state = (map["SessionState"] as QVariant).Value as Dictionary<string, QVariant>;
-				var networks = state["NetworkIds"].Value as List<QVariant>;
-				foreach (var qvar in networks) {
-					var id = qvar.GetValue<int>();
-					NetworkCollection.Get(id);
+			QVariant type;
+			if (map.TryGetValue("MsgType", out type)) {
+				switch (type.GetValue<string>()) {
+				case "SessionInit":
+					HandleSessionInit(map);
+					break;
+				default:
+					break;
 				}
-
-				var ircUserCount = state["IrcUserCount"].GetValue<int>();
-				var ircChannelCount = state["IrcChannelCount"].GetValue<int>();
-				var identities = state["Identities"].Value as List<QVariant>;
-
-				foreach (var qvar in identities) {
-					var identity = qvar.GetValue<Identity>();
-				}
-
-				var bil = state["BufferInfos"].Value as List<QVariant>;
-				BufferInfo[] bufferInfo = new BufferInfo[bil.Count];
-
-				for (int i = 0; i < bufferInfo.Length; i++) {
-					bufferInfo[i] = (bil[i].Value as BufferInfo);
-				}
-
-				BufferSyncer.Sync(bufferInfo);
 			}
+		}
+
+		public void HandleSessionInit(Dictionary<string, QVariant> map)
+		{
+			MainClass.MainWindow.ChatViewManager.Debug(Show(map));
+			var state = (map["SessionState"] as QVariant).Value as Dictionary<string, QVariant>;
+
+			var networks = (state["NetworkIds"].Value as List<QVariant>).Select(net => net.GetValue<int>()).ToArray();
+			foreach (var netid in networks) {
+				NetworkCollection.Get(netid);
+			}
+
+			var ircUserCount = state["IrcUserCount"].GetValue<int>();
+			var ircChannelCount = state["IrcChannelCount"].GetValue<int>();
+			var identities = (state["Identities"].Value as List<QVariant>).Select(v => v.GetValue<Identity>()).ToArray();
+			var bufferInfo = (state["BufferInfos"].Value as List<QVariant>).Select(bi => bi.GetValue<BufferInfo>()).ToArray();
+
+			BufferSyncer.Sync(bufferInfo);
+
+			foreach (int netid in networks) {
+				SendNetwork(netid);
+			}
+		}
+
+		void SendNetwork(int netid)
+		{
+			List<QVariant> list = new List<QVariant>();
+			list.Add(new QVariant((int)RequestType.InitRequest));
+			list.Add(new QVariant("Network"));
+			list.Add(new QVariant(netid.ToString()));
+			Send(list);
+		}
+
+		void RequestBacklog(int bufferId, int firstMsgId = -1, int lastMsgId = -1, int limit = 100, int additional = 0)
+		{
+			List<QVariant> packet = new List<QVariant>();
+			packet.Add(new QVariant((int)RequestType.Sync));
+			packet.Add(new QVariant("BacklogManager"));
+			packet.Add(new QVariant(null, QMetaType.QString));
+			packet.Add(new QVariant(Encoding.ASCII.GetBytes("requestBacklog")));
+			packet.Add(new QVariant(bufferId, "BufferId"));
+			packet.Add(new QVariant(firstMsgId, "MsgId"));
+			packet.Add(new QVariant(lastMsgId, "MsgId"));
+			packet.Add(new QVariant(limit));
+			packet.Add(new QVariant(additional));
+			Send(packet);
 		}
 
 		public void Handle(List<QVariant> list)

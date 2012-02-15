@@ -112,7 +112,7 @@ namespace Qutter.App
 			List<QVariant> list = new List<QVariant>(new QVariant[] {
 				new QVariant((int)RequestType.RpcCall),
 				new QVariant(Encoding.ASCII.GetBytes("2sendInput(BufferInfo,QString)")),
-				new QVariant(BufferInfo),
+				new QVariant(BufferInfo, "BufferInfo"),
 				new QVariant(text)
 			});
 			Syncer.Client.Send(new QVariant(list));
