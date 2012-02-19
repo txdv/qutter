@@ -446,9 +446,11 @@ namespace Qutter.App
 
 		public void HandleBacklogManager(List<QVariant> backlog)
 		{
-			foreach (var e in backlog.Last().Value as List<QVariant>) {
-				var ircMessage = e.GetValue<IrcMessage>();
+			var messages = (backlog.Last().Value as List<QVariant>).
+				Select(e => e.GetValue<IrcMessage>()).
+				OrderBy(ircMessage => ircMessage.DateTime);
 
+			foreach (var ircMessage in messages) {
 				BufferSyncer.Display(ircMessage);
 			}
 		}
