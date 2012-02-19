@@ -35,21 +35,21 @@ namespace Qutter.Inspector
 			var sourceStream = source.GetStream();
 			var destinationStream = destination.GetStream();
 
-			Action<Stream, Stream> move = (src, dst) => {
+			Action<Stream, Stream, Action<byte[]>> move = (src, dst, callback) => {
 				MiscUtil.IO.EndianBinaryReader br = new MiscUtil.IO.EndianBinaryReader(MiscUtil.Conversion.EndianBitConverter.Big, src);
 				MiscUtil.IO.EndianBinaryWriter bw = new MiscUtil.IO.EndianBinaryWriter(MiscUtil.Conversion.EndianBitConverter.Big, dst);
 				while (true) {
 					int len = br.ReadInt32();
 					var packet = br.ReadBytes(len);
-					OnSend(packet);
+					callback(packet);
 					bw.Write(len);
 					bw.Write(packet);
 				}
 			};
 
-			SourceThread = new Thread((o) => move(sourceStream, destinationStream));
+			SourceThread = new Thread((o) => move(sourceStream, destinationStream, OnSend));
 			SourceThread.Start();
-			DestinationThread = new Thread((o) => move(destinationStream, sourceStream));
+			DestinationThread = new Thread((o) => move(destinationStream, sourceStream, OnReceive));
 			DestinationThread.Start();
 		}
 
