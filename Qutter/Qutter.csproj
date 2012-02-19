@@ -43,10 +43,14 @@
     <Compile Include="MiscUtil\LittleEndianBitConverter.cs" />
     <Compile Include="MiscUtil\BigEndianBitConverter.cs" />
     <Compile Include="QVariant.cs" />
+    <Compile Include="Serializers\QStringSerializer.cs" />
+    <Compile Include="QTypeManager.cs" />
+    <Compile Include="Serializers\QVariantSerializer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="MiscUtil\" />
+    <Folder Include="Serializers\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

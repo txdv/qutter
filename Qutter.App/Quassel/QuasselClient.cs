@@ -137,7 +137,7 @@ namespace Qutter.App
 		public void Handle(Exception exception)
 		{
 			if (first) {
-				if (errors >= 3) {
+				if (errors >= 4) {
 					first = false;
 					Req();
 				}
@@ -155,7 +155,10 @@ namespace Qutter.App
 				var lastSeenMsg = map["LastSeenMsg"].Value as List<QVariant>;
 
 			});
-			Send("BufferViewManager", null);
+			Send("BufferViewManager", null, (args) => {
+				var map = args[0].Value as Dictionary<string, QVariant>;
+				var list = map["BufferViewIds"].Value as List<QVariant>;
+			});
 			Send("AliasManager", null);
 			Send("NetworkConfig", "GlobalNetworkConfig", (args) => {
 				var map = args[0].Value as Dictionary<string, QVariant>;
@@ -183,7 +186,7 @@ namespace Qutter.App
 			});
 		}
 
-		internal void RequestBacklog(int bufferId, int firstMsgId = -1, int lastMsgId = -1, int limit = 500, int additional = 0)
+		internal void RequestBacklog(int bufferId, int firstMsgId = -1, int lastMsgId = -1, int limit = 100, int additional = 0)
 		{
 			List<QVariant> packet = new List<QVariant>();
 			packet.Add(new QVariant((int)RequestType.Sync));
@@ -235,7 +238,7 @@ namespace Qutter.App
 				break;
 			case RequestType.InitData:
 				var className = GetString(list[1]);
-				var objectName = list[2].GetValue<string>();
+				var objectName = list[2].Value as string;
 				objectName = objectName == string.Empty ? null : objectName;
 				bool done = false;
 				foreach (var command in commands) {

@@ -119,6 +119,7 @@ namespace Qutter.Inspector
 			try {
 				string ret = QVariant.Inspect(QTypeManager.Deserialize<QVariant>(ms));
 				Console.WriteLine("{0} {1}", prefix, QVariant.Inspect(ret));
+				Console.WriteLine (inspect(buffer));
 			} catch (Exception exception) {
 				Console.WriteLine ("{0} failed ({1})", prefix, buffer.Length);
 				Console.WriteLine (inspect(buffer));

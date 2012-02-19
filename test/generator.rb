@@ -26,9 +26,11 @@ File.open(out + "_write.c", "w") do |f|
   f.puts "#include <QFile>"
   f.puts "#include <QDebug>"
   f.puts code.children.at("cinclude").text
-  f.puts
-  f.puts code.children.at("ccommon").text
-  f.puts
+  if not code.children.at("ccommon").nil?
+    f.puts
+    f.puts code.children.at("ccommon").text
+    f.puts
+  end
   f.puts "int main()\n{"
   f.puts "  QFile file(\"#{FILENAME}\");"
   f.puts "  file.open(QIODevice::WriteOnly);"
@@ -44,9 +46,11 @@ File.open(out + "_read.c", "w") do |f|
   f.puts "#include <QDebug>"
   f.puts "#include <assert.h>"
   f.puts code.children.at("cinclude").text
-  f.puts
-  f.puts code.children.at("ccommon").text
-  f.puts
+  if not code.children.at("ccommon").nil?
+    f.puts
+    f.puts code.children.at("ccommon").text
+    f.puts
+  end
   f.puts "int main()\n{"
   f.puts "  QFile file(\"#{FILENAME}\");"
   f.puts "  file.open(QIODevice::ReadOnly);"
@@ -63,10 +67,12 @@ File.open(out + "_write.cs", "w") do |f|
   f.puts "using System;"
   f.puts "using System.IO;"
   f.puts "using System.Collections.Generic;"
+  f.puts "using System.Diagnostics;"
   f.puts "using Qutter;"
-  f.puts
-  f.puts code.children.at("cscommon").text
-  f.puts
+  if not code.children.at("cscommon").nil?
+    f.puts code.children.at("cscommon").text
+    f.puts
+  end
   f.puts "public class MainClass"
   f.puts "{";
   f.puts "  public static void Main(string[] args)"
@@ -85,11 +91,13 @@ File.open(out + "_read.cs", "w") do |f|
   f.puts "using System;"
   f.puts "using System.IO;"
   f.puts "using System.Collections.Generic;"
-  f.puts "using Qutter;"
   f.puts "using System.Diagnostics;"
+  f.puts "using Qutter;"
   f.puts
-  f.puts code.children.at("cscommon").text
-  f.puts
+  if not code.children.at("cscommon").nil?
+    f.puts code.children.at("cscommon").text
+    f.puts
+  end
   f.puts "public class MainClass"
   f.puts "{";
   f.puts "  public static void Main(string[] args)"
