@@ -188,17 +188,17 @@ namespace Qutter.App
 
 		internal void RequestBacklog(int bufferId, int firstMsgId = -1, int lastMsgId = -1, int limit = 100, int additional = 0)
 		{
-			List<QVariant> packet = new List<QVariant>();
-			packet.Add(new QVariant((int)RequestType.Sync));
-			packet.Add(new QVariant("BacklogManager"));
-			packet.Add(new QVariant(null, QMetaType.QString));
-			packet.Add(new QVariant(Encoding.ASCII.GetBytes("requestBacklog")));
-			packet.Add(new QVariant(bufferId, "BufferId"));
-			packet.Add(new QVariant(firstMsgId, "MsgId"));
-			packet.Add(new QVariant(lastMsgId, "MsgId"));
-			packet.Add(new QVariant(limit));
-			packet.Add(new QVariant(additional));
-			Send(packet);
+			Send(new QVariant[] {
+				new QVariant((int)RequestType.Sync),
+				new QVariant("BacklogManager"),
+				new QVariant(null, QMetaType.QString),
+				new QVariant(Encoding.ASCII.GetBytes("requestBacklog")),
+				new QVariant(bufferId, "BufferId"),
+				new QVariant(firstMsgId, "MsgId"),
+				new QVariant(lastMsgId, "MsgId"),
+				new QVariant(limit),
+				new QVariant(additional)
+			});
 		}
 
 		public void Handle(List<QVariant> list)
@@ -214,7 +214,11 @@ namespace Qutter.App
 			string classname = null;
 			switch (type) {
 			case RequestType.Sync:
-				classname = list[1].GetValue<string>();
+				if (list[1].Type == QMetaType.QByteArray) {
+					classname = GetString(list[1]);
+				} else {
+					classname = list[1].GetValue<string>();
+				}
 				switch (classname) {
 				case "Network":
 					HandleNetwork(list);
@@ -227,6 +231,9 @@ namespace Qutter.App
 					break;
 				case "IrcChannel":
 					HandleIrcChannel(list);
+					break;
+				case "BacklogManager":
+					HandleBacklogManager(list);
 					break;
 				default:
 					Console.Error.WriteLine("not handled: {0}", Show(list));
@@ -428,6 +435,15 @@ namespace Qutter.App
 			default:
 				Console.Error.WriteLine ("this shit: {0}", Show(list));
 				break;
+			}
+		}
+
+		public void HandleBacklogManager(List<QVariant> backlog)
+		{
+			foreach (var e in backlog.Last().Value as List<QVariant>) {
+				var ircMessage = e.GetValue<IrcMessage>();
+
+				BufferSyncer.Display(ircMessage);
 			}
 		}
 
