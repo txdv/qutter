@@ -14,7 +14,7 @@ namespace Qutter.App
 
 		public static void Main(string[] args)
 		{
-			string configfile = Environment.GetEnvironmentVariable("HOME") + "/.config/quassel-irc.org/quasselclient.conf";
+			string configfile = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/.config/quassel-irc.org/quasselclient.conf";
 			var settings = new Settings(configfile);
 
 			QuasselTypes.Init();
