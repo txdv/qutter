@@ -5,6 +5,13 @@ using System.Linq;
 
 namespace Qutter.App
 {
+	class RequestCommand
+	{
+		public string ClassName { get; set; }
+		public string ObjectName { get; set; }
+		public Action<QVariant[]> Callback { get; set; }
+	}
+
 	public class QuasselClient
 	{
 		private CoreConnection connection;
@@ -52,6 +59,24 @@ namespace Qutter.App
 		internal void Send(RequestType type, string className, string objectName)
 		{
 			Send((int)type, className, objectName);
+		}
+
+		internal void Send(string className, string objectName)
+		{
+			Send(RequestType.InitRequest, className, objectName);
+		}
+
+		List<RequestCommand> commands = new List<RequestCommand>();
+		internal void Send(string className, string objectName, Action<QVariant[]> callback)
+		{
+			var req = new RequestCommand() {
+				ClassName = className,
+				ObjectName = objectName,
+				Callback = callback
+			};
+
+			commands.Add(req);
+			Send(className, objectName);
 		}
 
 		internal void Init()
@@ -103,7 +128,7 @@ namespace Qutter.App
 			BufferSyncer.Sync(bufferInfo);
 
 			foreach (int netid in networks) {
-				SendNetwork(netid);
+				Send(RequestType.InitRequest, "Network", netid.ToString());
 			}
 		}
 
@@ -121,22 +146,41 @@ namespace Qutter.App
 			}
 		}
 
-		void SendNetwork(int netid)
-		{
-			List<QVariant> list = new List<QVariant>();
-			list.Add(new QVariant((int)RequestType.InitRequest));
-			list.Add(new QVariant("Network"));
-			list.Add(new QVariant(netid.ToString()));
-			Send(list);
-		}
-
 		void Req()
 		{
-			Send(RequestType.InitRequest, "BufferSyncer", null);
-			Send(RequestType.InitRequest, "BufferViewManager", null);
-			Send(RequestType.InitRequest, "AliasManager", null);
-			Send(RequestType.InitRequest, "NetworkConfig", "GlobalNetworkConfig");
-			Send(RequestType.InitRequest, "IgnoreListManager", null);
+			Send("BufferSyncer", null, (args) => {
+				var map = args[0].Value as Dictionary<string, QVariant>;
+
+				var markerLines = map["MarkerLines"].Value as List<QVariant>;
+				var lastSeenMsg = map["LastSeenMsg"].Value as List<QVariant>;
+
+			});
+			Send("BufferViewManager", null);
+			Send("AliasManager", null);
+			Send("NetworkConfig", "GlobalNetworkConfig", (args) => {
+				var map = args[0].Value as Dictionary<string, QVariant>;
+
+				var pingTimeoutEnabled = map["pingTimeoutEnabled"].GetValue<bool>();
+				var pingInterval = map["pingInterval"].GetValue<int>();
+				var maxPingCount = map["maxPingCount"].GetValue<int>();
+				var autoWhoNickLimit = map["autoWhoNickLimit"].GetValue<int>();
+				var autoWhoInterval = map["autoWhoInterval"].GetValue<int>();
+				var autoWhoEnabled = map["autoWhoEnabled"].GetValue<bool>();
+				var autoWhoDelay = map["autoWhoDelay"].GetValue<int>();
+			});
+			Send("IgnoreListManager", null, (args) => {
+				Send("BufferViewConfig", "0", (args2) => {
+					var map = args2[0].Value as Dictionary<string, QVariant>;
+
+					var bufferList = map["BufferList"].GetValue<List<QVariant>>().
+						Select(item => item.GetValue<int>()).
+						OrderBy(i => i);
+
+					foreach (var bufferId in bufferList) {
+						RequestBacklog(bufferId);
+					}
+				});
+			});
 		}
 
 		internal void RequestBacklog(int bufferId, int firstMsgId = -1, int lastMsgId = -1, int limit = 500, int additional = 0)
@@ -190,29 +234,37 @@ namespace Qutter.App
 				HandleRpcCallCommand(list);
 				break;
 			case RequestType.InitData:
-				var bytes = list[1].GetValue<byte[]>();
-				if (bytes != null) {
-					classname = Encoding.ASCII.GetString(bytes);
+				var className = GetString(list[1]);
+				var objectName = list[2].GetValue<string>();
+				objectName = objectName == string.Empty ? null : objectName;
+				bool done = false;
+				foreach (var command in commands) {
+					if (command.ClassName == className && command.ObjectName == objectName) {
+						command.Callback(list.Skip(3).ToArray());
+						commands.Remove(command);
+						done = true;
+						break;
+					}
 				}
-				switch (classname) {
-				case "BufferSyncer":
-					HandleInitBufferSyncer(list);
-					break;
-				case "IgnoreListManager":
-					Send(RequestType.InitRequest, "BufferViewConfig", "0");
-					break;
-				case "BufferViewConfig":
-					HandleBufferViewConfig(list);
-					break;
-				default:
+
+				if (!done) {
 					Console.Error.WriteLine("not handled: {0}", Show(list));
-					break;
 				}
+
 				break;
 			default:
 				Console.Error.WriteLine("not handled: {0}", Show(list));
 				break;
 			}
+		}
+
+		string GetString(QVariant variable)
+		{
+			var tmp = variable.GetValue<byte[]>();
+			if (tmp == null) {
+				return null;
+			}
+			return Encoding.ASCII.GetString(tmp);
 		}
 
 		Network GetNetwork(string str, out string reminder)
@@ -373,27 +425,6 @@ namespace Qutter.App
 			default:
 				Console.Error.WriteLine ("this shit: {0}", Show(list));
 				break;
-			}
-		}
-
-		void HandleInitBufferSyncer(List<QVariant> list)
-		{
-			var map = list[3].Value as Dictionary<string, QVariant>;
-
-			var markerLines = map["MarkerLines"].Value as List<QVariant>;
-			var lastSeenMsg = map["LastSeenMsg"].Value as List<QVariant>;
-
-			// TODO: do something with this
-		}
-
-		void HandleBufferViewConfig(List<QVariant> list)
-		{
-			var map = list[3].Value as Dictionary<string, QVariant>;
-
-			var bufferList = map["BufferList"].GetValue<List<QVariant>>().Select(item => item.GetValue<int>()).ToList();
-
-			foreach (var bufferId in bufferList) {
-				RequestBacklog(bufferId);
 			}
 		}
 
