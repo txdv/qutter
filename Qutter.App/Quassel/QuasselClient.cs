@@ -159,7 +159,13 @@ namespace Qutter.App
 				var map = args[0].Value as Dictionary<string, QVariant>;
 				var list = map["BufferViewIds"].Value as List<QVariant>;
 			});
-			Send("AliasManager", null);
+			Send("AliasManager", null, (args) => {
+				var map = args[0].Value as Dictionary<string, QVariant>;
+				var aliases = map["Aliases"].Value as Dictionary<string, QVariant>;
+				if (aliases != null) {
+
+				}
+			});
 			Send("NetworkConfig", "GlobalNetworkConfig", (args) => {
 				var map = args[0].Value as Dictionary<string, QVariant>;
 
