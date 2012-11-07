@@ -79,6 +79,7 @@ File.open(out + "_write.cs", "w") do |f|
   f.puts "  {"
   f.puts "    FileStream fs = File.OpenWrite(\"#{FILENAME}\");"
   f.puts code.children.at("cswrite").text
+  f.puts "    fs.SetLength(fs.Position);"
   f.puts "    fs.Close();"
   f.puts "  }"
   f.puts "}";
@@ -130,9 +131,11 @@ File.delete("test")
 puts "Generating Makefile"
 File.open("output/Makefile", "w+") do |test|
 files = [ ]
+basefiles = [ ]
 libs = "\`pkg-config --libs --cflags QtCore\`"
 Dir["tests/*.xml"].each do |file|
   filebasename = File.basename(file, ".xml")
+  basefiles.push filebasename
 
   files.push "#{filebasename}_write.exe"
   files.push "#{filebasename}_read.exe"
@@ -157,13 +160,18 @@ end
   test.puts
 
   test.puts "run: all"
-  files.each do |file|
-    test.puts "\t@echo #{file}"
-    if (file.ends_with(".exe"))
-      test.puts "\t@mono --debug #{file}"
-    else
-      test.puts "\t@./#{file}"
-    end
-  end
+  basefiles.each do |fb|
+    test.puts "\t@echo #{fb}"
+    test.puts "\t@mono --debug #{fb}_write.exe"
+    test.puts "\t@mono --debug #{fb}_read.exe"
 
+    test.puts "\t@mono --debug #{fb}_write.exe"
+    test.puts "\t@./#{fb}_read"
+
+    test.puts "\t@./#{fb}_write"
+    test.puts "\t@mono --debug #{fb}_read.exe"
+
+    test.puts "\t@./#{fb}_write"
+    test.puts "\t@./#{fb}_read"
+  end
 end

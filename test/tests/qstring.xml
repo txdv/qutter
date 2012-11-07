@@ -6,6 +6,8 @@
   out << QString("test");
 
   out << QString("unicode ąčęėįšūöä");
+
+  out << QString("asd 水");
 ]]></cwrite>
 <cread><![CDATA[
   QString s;
@@ -15,11 +17,15 @@
   assert(s == "test");
   in >> s;
   assert(s == "unicode ąčęėįšūöä");
+  in >> s;
+  assert(s != NULL);
+  assert(s == "asd 水");
 ]]></cread>
 <cswrite><![CDATA[
     QTypeManager.Serialize<string>(fs, null);
     QTypeManager.Serialize(fs, "test");
     QTypeManager.Serialize(fs, "unicode ąčęėįšūöä");
+    QTypeManager.Serialize(fs, "asd 水");
 ]]></cswrite>
 <csread><![CDATA[
     string str;
@@ -30,5 +36,7 @@
     Debug.Assert(str == "test");
     QTypeManager.Deserialize(fs, out str);
     Debug.Assert(str == "unicode ąčęėįšūöä");
+    QTypeManager.Deserialize(fs, out str);
+    Debug.Assert(str == "asd 水");
 ]]></csread>
 </code>
