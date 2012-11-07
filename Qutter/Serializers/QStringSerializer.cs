@@ -28,9 +28,11 @@ namespace Qutter
 
 			byte[] strData = br.ReadBytes(len);
 
-			// FIXME: this doesn't seem to conform to qt unicode serialization
-			// I don't know why, breakes special characters ...
-			return UnicodeEncoding.BigEndianUnicode.GetString(strData);
+			for (int i = 0; i < strData.Length / 2; i++) {
+				strData[i] = strData[i * 2 + 1];
+			}
+
+			return Encoding.UTF8.GetString(strData, 0, strData.Length / 2);
 		}
 	}
 }
