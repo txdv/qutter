@@ -120,15 +120,22 @@ File.open("output/Makefile", "w+") do |test|
   files = [ ]
   basefiles = [ ]
   libs = "\`pkg-config --libs --cflags QtCore\`"
+
   Dir["tests/*.xml"].each do |file|
     filebasename = File.basename(file, ".xml")
+
     basefiles.push filebasename
 
     files.push "#{filebasename}_write.exe"
     files.push "#{filebasename}_read.exe"
     files.push "#{filebasename}_write"
     files.push "#{filebasename}_read"
+  end
 
+  test.puts "all: " + files.join(" ")
+  test.puts
+
+  basefiles.each do |filebasename|
     test.puts "#{filebasename}_write.exe: #{filebasename}_write.cs"
     test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_write.cs"
     test.puts
@@ -142,9 +149,6 @@ File.open("output/Makefile", "w+") do |test|
     test.puts "\tg++ #{filebasename}_read.c #{libs} -o #{filebasename}_read"
     test.puts
   end
-
-  test.puts "all: " + files.join(" ")
-  test.puts
 
   test.puts "clean:"
   test.puts "\trm -rvf " + files.join(" ")
