@@ -35,7 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Serializer.cs" />
     <Compile Include="MiscUtil\EndianBinaryWriter.cs" />
     <Compile Include="MiscUtil\EndianBinaryReader.cs" />
     <Compile Include="MiscUtil\EndianBitConverter.cs" />
@@ -46,6 +45,20 @@
     <Compile Include="Serializers\QStringSerializer.cs" />
     <Compile Include="QTypeManager.cs" />
     <Compile Include="Serializers\QVariantSerializer.cs" />
+    <Compile Include="EndianBinaryWritterExtensions.cs" />
+    <Compile Include="QMetaType.cs" />
+    <Compile Include="Serializers\QMetaTypeSerializer.cs" />
+    <Compile Include="Serializers\VoidSerializer.cs" />
+    <Compile Include="Serializers\BoolSerializer.cs" />
+    <Compile Include="Serializers\QIntegerSerializer.cs" />
+    <Compile Include="Serializers\QUIntegerSerializer.cs" />
+    <Compile Include="Serializers\QCharSerializer.cs" />
+    <Compile Include="Serializers\QByteSerializer.cs" />
+    <Compile Include="Serializers\QListSerializer.cs" />
+    <Compile Include="Serializers\QMapSerializer.cs" />
+    <Compile Include="Serializers\QTimeSerializer.cs" />
+    <Compile Include="Serializers\QDateTimeSerializer.cs" />
+    <Compile Include="Serializers\QUShortSerializer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
