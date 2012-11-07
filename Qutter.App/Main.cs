@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Mono.Terminal;
-using Manos.IO;
+using LibuvSharp;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App
 {
@@ -22,7 +22,7 @@ namespace Qutter.App
 			var acc = settings.Accounts[settings.AutoConnectAccount];
 			var coreConnection = new CoreConnection(acc.HostName, acc.Port, acc.User, acc.Password, false);
 
-			Application.Init(Context.Create(Backend.Poll));
+			Application.Init();
 
 			var qc = new QuasselClient(coreConnection);
 
@@ -30,11 +30,8 @@ namespace Qutter.App
 
 			MainWindow = ThemeManager.Default.CreateMainWindow(qc);
 
-			AsyncWatcher<QVariant> listnotifier = new AsyncWatcher<QVariant>(Application.Context, (packet) => qc.Handle(packet));
-			AsyncWatcher<Exception> excenotifier = new AsyncWatcher<Exception>(Application.Context, (exce) => qc.Handle(exce));
-
-			listnotifier.Start();
-			excenotifier.Start();
+			AsyncWatcher<QVariant> listnotifier = new AsyncWatcher<QVariant>((packet) => qc.Handle(packet));
+			AsyncWatcher<Exception> excenotifier = new AsyncWatcher<Exception>((exce) => qc.Handle(exce));
 
 			var nt = new Thread((obj) => {
 				coreConnection.ReceivePacket += (packet) => {

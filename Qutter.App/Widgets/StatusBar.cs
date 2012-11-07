@@ -1,8 +1,8 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
-using Mono.Terminal;
-using Manos.IO;
+using LibuvSharp;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App
 {
@@ -18,9 +18,9 @@ namespace Qutter.App
 				Invalid = true;
 			};
 
-			Application.Context.CreateTimerWatcher(TimeSpan.Zero, TimeSpan.FromSeconds(1), () => {
-				Invalid = true;
-			}).Start();
+			var timer = new UVTimer();
+			timer.Tick += () => Invalid = true;
+			timer.Start(TimeSpan.Zero, TimeSpan.FromSeconds(1));
 		}
 
 		public override void Redraw()

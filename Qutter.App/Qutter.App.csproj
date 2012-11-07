@@ -9,33 +9,31 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Qutter.App</RootNamespace>
     <AssemblyName>Qutter.App</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>..\bin\Debug</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <Externalconsole>True</Externalconsole>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>..\bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <Externalconsole>True</Externalconsole>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Nini, Version=1.1.0.0, Culture=neutral, PublicKeyToken=691faec150a7fa7b">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Nini.dll</HintPath>
-    </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="Nini">
+      <HintPath>..\..\..\..\..\..\opt\mono\master\lib\mono\gac\Nini\1.0.0.0__691faec150a7fa7b\Nini.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -69,13 +67,13 @@
       <Project>{440D935C-C19A-4499-970E-7D5E76CBABD2}</Project>
       <Name>Qutter</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Mono.Terminal\manos\src\Manos.IO\Manos.IO.csproj">
-      <Project>{5E2AA984-1C9C-4890-BEF6-CC2981C49AFF}</Project>
-      <Name>Manos.IO</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Mono.Terminal\Mono.Terminal\Mono.Terminal.csproj">
+    <ProjectReference Include="..\LibuvSharp.Terminal\LibuvSharp.Terminal\LibuvSharp.Terminal.csproj">
       <Project>{80BE055C-768D-4AC5-8737-427E84895C3F}</Project>
-      <Name>Mono.Terminal</Name>
+      <Name>LibuvSharp.Terminal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LibuvSharp.Terminal\LibuvSharp\LibuvSharp\LibuvSharp.csproj">
+      <Project>{281B560A-E3B1-437C-9274-DD655E860E6E}</Project>
+      <Name>LibuvSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -83,9 +81,9 @@
     <MonoDevelop>
       <Properties>
         <Policies>
-          <TextStylePolicy TabWidth="4" RemoveTrailingWhitespace="True" inheritsSet="Mono" inheritsScope="text/plain" scope="text/x-csharp" />
+          <TextStylePolicy TabWidth="4" inheritsSet="Mono" inheritsScope="text/plain" scope="text/x-csharp" />
           <CSharpFormattingPolicy inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
-          <TextStylePolicy FileWidth="120" TabWidth="4" RemoveTrailingWhitespace="True" inheritsSet="Mono" inheritsScope="text/plain" scope="text/plain" />
+          <TextStylePolicy FileWidth="120" TabWidth="4" inheritsSet="Mono" inheritsScope="text/plain" scope="text/plain" />
         </Policies>
       </Properties>
     </MonoDevelop>

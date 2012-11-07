@@ -1,5 +1,5 @@
 using System;
-using Mono.Terminal;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App
 {

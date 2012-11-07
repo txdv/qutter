@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Mono.Terminal;
-using Manos.IO;
+using LibuvSharp;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App
 {
@@ -37,7 +37,7 @@ namespace Qutter.App
 		}
 
 		public QuasselClient Client { get; protected set; }
-		public Context Context { get; protected set; }
+		public Loop Loop { get; protected set; }
 
 		public void Debug(string message)
 		{

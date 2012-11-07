@@ -1,6 +1,6 @@
 using System;
 using Qutter.App;
-using Mono.Terminal;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App.Themes.Default
 {

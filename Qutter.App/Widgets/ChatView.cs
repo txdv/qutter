@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Mono.Terminal;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App
 {

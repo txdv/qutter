@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
-using Manos.IO;
-using Mono.Terminal;
+using LibuvSharp;
+using LibuvSharp.Terminal;
 
 namespace Qutter.App
 {
@@ -11,16 +11,16 @@ namespace Qutter.App
 		AsyncWatcher<Exception> exceptionnotifier;
 		Thread thread;
 
-		public Context Context { get; protected set; }
+		public Loop Loop { get; protected set; }
 		public CoreConnection CoreConnection { get; protected set; }
 
-		public AsyncCoreConnection(Context context, CoreConnection coreConnection)
+		public AsyncCoreConnection(Loop loop, CoreConnection coreConnection)
 		{
-			Context = context;
+			Loop = loop;
 			CoreConnection = coreConnection;
 
-			listnotifier = new AsyncWatcher<QVariant>(Context, (packet) => OnReceivePacket(packet));
-			exceptionnotifier = new AsyncWatcher<Exception>(Context, (exception) => OnException(exception));
+			listnotifier = new AsyncWatcher<QVariant>((packet) => OnReceivePacket(packet));
+			exceptionnotifier = new AsyncWatcher<Exception>((exception) => OnException(exception));
 
 			thread = new Thread((obj) => {
 				coreConnection.ReceivePacket += (packet) => {
@@ -40,16 +40,12 @@ namespace Qutter.App
 		public void Start()
 		{
 			thread.Start();
-			listnotifier.Start();
-			exceptionnotifier.Start();
 
 		}
 
 		public void Stop()
 		{
 			thread.Abort();
-			listnotifier.Stop();
-			exceptionnotifier.Stop();
 		}
 
 		protected void OnReceivePacket(QVariant packet)
