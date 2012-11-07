@@ -1,7 +1,5 @@
 require 'nokogiri'
 
-FILENAME = "serialization.txt";
-
 class String
   def ends_with(str)
     self[length - str.length..length] == str
@@ -32,7 +30,7 @@ File.open(out + "_write.c", "w") do |f|
     f.puts
   end
   f.puts "int main()\n{"
-  f.puts "  QFile file(\"#{FILENAME}\");"
+  f.puts "  QFile file(\"#{filebasename}.txt\");"
   f.puts "  file.open(QIODevice::WriteOnly);"
   f.puts "  QDataStream out(&file);"
   f.puts code.children.at("cwrite").text
@@ -52,7 +50,7 @@ File.open(out + "_read.c", "w") do |f|
     f.puts
   end
   f.puts "int main()\n{"
-  f.puts "  QFile file(\"#{FILENAME}\");"
+  f.puts "  QFile file(\"#{filebasename}.txt\");"
   f.puts "  file.open(QIODevice::ReadOnly);"
   f.puts "  QDataStream in(&file);";
 
@@ -77,7 +75,7 @@ File.open(out + "_write.cs", "w") do |f|
   f.puts "{";
   f.puts "  public static void Main(string[] args)"
   f.puts "  {"
-  f.puts "    FileStream fs = File.OpenWrite(\"#{FILENAME}\");"
+  f.puts "    FileStream fs = File.OpenWrite(\"#{filebasename}.txt\");"
   f.puts code.children.at("cswrite").text
   f.puts "    fs.SetLength(fs.Position);"
   f.puts "    fs.Close();"
@@ -103,7 +101,7 @@ File.open(out + "_read.cs", "w") do |f|
   f.puts "{";
   f.puts "  public static void Main(string[] args)"
   f.puts "  {"
-  f.puts "    FileStream fs = File.OpenRead(\"#{FILENAME}\");"
+  f.puts "    FileStream fs = File.OpenRead(\"#{filebasename}.txt\");"
   f.puts "    Trace.Listeners.Add(new ConsoleTraceListener());"
   f.puts code.children.at("csread").text
   f.puts "    fs.Close();"
@@ -130,37 +128,41 @@ end
 File.delete("test")
 puts "Generating Makefile"
 File.open("output/Makefile", "w+") do |test|
-files = [ ]
-basefiles = [ ]
-libs = "\`pkg-config --libs --cflags QtCore\`"
-Dir["tests/*.xml"].each do |file|
-  filebasename = File.basename(file, ".xml")
-  basefiles.push filebasename
+  files = [ ]
+  basefiles = [ ]
+  libs = "\`pkg-config --libs --cflags QtCore\`"
+  Dir["tests/*.xml"].each do |file|
+    filebasename = File.basename(file, ".xml")
+    basefiles.push filebasename
 
-  files.push "#{filebasename}_write.exe"
-  files.push "#{filebasename}_read.exe"
-  files.push "#{filebasename}_write"
-  files.push "#{filebasename}_read"
+    files.push "#{filebasename}_write.exe"
+    files.push "#{filebasename}_read.exe"
+    files.push "#{filebasename}_write"
+    files.push "#{filebasename}_read"
 
-  test.puts "#{filebasename}_write.exe: #{filebasename}_write.cs"
-  test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_write.cs"
-  test.puts
-  test.puts "#{filebasename}_read.exe: #{filebasename}_read.cs"
-  test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_read.cs"
-  test.puts
-  test.puts "#{filebasename}_write: #{filebasename}_write.c"
-  test.puts "\tg++ #{filebasename}_write.c #{libs} -o #{filebasename}_write"
-  test.puts
-  test.puts "#{filebasename}_read: #{filebasename}_read.c"
-  test.puts "\tg++ #{filebasename}_read.c #{libs} -o #{filebasename}_read"
-  test.puts
-end
+    test.puts "#{filebasename}_write.exe: #{filebasename}_write.cs"
+    test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_write.cs"
+    test.puts
+    test.puts "#{filebasename}_read.exe: #{filebasename}_read.cs"
+    test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_read.cs"
+    test.puts
+    test.puts "#{filebasename}_write: #{filebasename}_write.c"
+    test.puts "\tg++ #{filebasename}_write.c #{libs} -o #{filebasename}_write"
+    test.puts
+    test.puts "#{filebasename}_read: #{filebasename}_read.c"
+    test.puts "\tg++ #{filebasename}_read.c #{libs} -o #{filebasename}_read"
+    test.puts
+  end
 
   test.puts "all: " + files.join(" ")
   test.puts
 
-  test.puts "run: all"
+  test.puts "clean:"
+  test.puts "\trm -rvf " + files.join(" ")
+  test.puts
+
   basefiles.each do |fb|
+    test.puts "#{fb}: #{fb}_write.exe #{fb}_read.exe #{fb}_write #{fb}_read"
     test.puts "\t@echo #{fb}"
     test.puts "\t@mono --debug #{fb}_write.exe"
     test.puts "\t@mono --debug #{fb}_read.exe"
@@ -173,5 +175,8 @@ end
 
     test.puts "\t@./#{fb}_write"
     test.puts "\t@./#{fb}_read"
+    test.puts
   end
+
+  test.puts "run: " + basefiles.join(" ")
 end

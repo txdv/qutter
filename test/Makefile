@@ -11,4 +11,4 @@ run: all
 	cd output; $(MAKE) $(MFLAGS) run
 
 clean:
-	rm -f output/*
+	rm -rf output/*
