@@ -130,6 +130,7 @@ File.delete("test")
 puts "Generating Makefile"
 File.open("output/Makefile", "w+") do |test|
 files = [ ]
+libs = "\`pkg-config --libs --cflags QtCore\`"
 Dir["tests/*.xml"].each do |file|
   filebasename = File.basename(file, ".xml")
 
@@ -145,10 +146,10 @@ Dir["tests/*.xml"].each do |file|
   test.puts "\tgmcs -r:Qutter.dll -debug #{filebasename}_read.cs"
   test.puts
   test.puts "#{filebasename}_write: #{filebasename}_write.c"
-  test.puts "\tg++ \`pkg-config QtCore --libs --cflags\` #{filebasename}_write.c -o #{filebasename}_write"
+  test.puts "\tg++ #{filebasename}_write.c #{libs} -o #{filebasename}_write"
   test.puts
   test.puts "#{filebasename}_read: #{filebasename}_read.c"
-  test.puts "\tg++ \`pkg-config QtCore --libs --cflags\` #{filebasename}_read.c -o #{filebasename}_read"
+  test.puts "\tg++ #{filebasename}_read.c #{libs} -o #{filebasename}_read"
   test.puts
 end
 
