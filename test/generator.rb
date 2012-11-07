@@ -12,112 +12,109 @@ def check(file1, file2)
 end
 
 def generate(file)
+  filebasename = File.basename(file, ".xml")
 
-filebasename = File.basename(file, ".xml")
+  out = "output/" + filebasename
 
-out = "output/" + filebasename
+  code = Nokogiri::XML(open(file))
 
-code = Nokogiri::XML(open(file))
-
-if check(file, out + "_write.c")
-File.open(out + "_write.c", "w") do |f|
-  f.puts "#include <QFile>"
-  f.puts "#include <QDebug>"
-  f.puts code.children.at("cinclude").text
-  if not code.children.at("ccommon").nil?
-    f.puts
-    f.puts code.children.at("ccommon").text
-    f.puts
+  if check(file, out + "_write.c")
+    File.open(out + "_write.c", "w") do |f|
+      f.puts "#include <QFile>"
+      f.puts "#include <QDebug>"
+      f.puts code.children.at("cinclude").text
+      if not code.children.at("ccommon").nil?
+        f.puts
+        f.puts code.children.at("ccommon").text
+        f.puts
+      end
+      f.puts "int main()\n{"
+      f.puts "  QFile file(\"#{filebasename}.txt\");"
+      f.puts "  file.open(QIODevice::WriteOnly);"
+      f.puts "  QDataStream out(&file);"
+      f.puts code.children.at("cwrite").text
+      f.puts "\n  return 0;\n}\n";
+    end
   end
-  f.puts "int main()\n{"
-  f.puts "  QFile file(\"#{filebasename}.txt\");"
-  f.puts "  file.open(QIODevice::WriteOnly);"
-  f.puts "  QDataStream out(&file);"
-  f.puts code.children.at("cwrite").text
-  f.puts "\n  return 0;\n}\n";
-end
-end
 
-if check(file, out + "_read.c")
-File.open(out + "_read.c", "w") do |f|
-  f.puts "#include <QFile>"
-  f.puts "#include <QDebug>"
-  f.puts "#include <assert.h>"
-  f.puts code.children.at("cinclude").text
-  if not code.children.at("ccommon").nil?
-    f.puts
-    f.puts code.children.at("ccommon").text
-    f.puts
+  if check(file, out + "_read.c")
+    File.open(out + "_read.c", "w") do |f|
+      f.puts "#include <QFile>"
+      f.puts "#include <QDebug>"
+      f.puts "#include <assert.h>"
+      f.puts code.children.at("cinclude").text
+      if not code.children.at("ccommon").nil?
+        f.puts
+        f.puts code.children.at("ccommon").text
+        f.puts
+      end
+      f.puts "int main()\n{"
+      f.puts "  QFile file(\"#{filebasename}.txt\");"
+      f.puts "  file.open(QIODevice::ReadOnly);"
+      f.puts "  QDataStream in(&file);";
+
+      f.puts code.children.at("cread").text
+      f.puts "\n  return 0;\n}\n";
+    end
   end
-  f.puts "int main()\n{"
-  f.puts "  QFile file(\"#{filebasename}.txt\");"
-  f.puts "  file.open(QIODevice::ReadOnly);"
-  f.puts "  QDataStream in(&file);";
 
-  f.puts code.children.at("cread").text
-  f.puts "\n  return 0;\n}\n";
-end
-end
-
-if check(file, out + "_write.cs")
-File.open(out + "_write.cs", "w") do |f|
-  f.puts "#define DEBUG"
-  f.puts "using System;"
-  f.puts "using System.IO;"
-  f.puts "using System.Collections.Generic;"
-  f.puts "using System.Diagnostics;"
-  f.puts "using Qutter;"
-  if not code.children.at("cscommon").nil?
-    f.puts code.children.at("cscommon").text
-    f.puts
+  if check(file, out + "_write.cs")
+    File.open(out + "_write.cs", "w") do |f|
+      f.puts "#define DEBUG"
+      f.puts "using System;"
+      f.puts "using System.IO;"
+      f.puts "using System.Collections.Generic;"
+      f.puts "using System.Diagnostics;"
+      f.puts "using Qutter;"
+      if not code.children.at("cscommon").nil?
+        f.puts code.children.at("cscommon").text
+        f.puts
+      end
+      f.puts "public class MainClass"
+      f.puts "{";
+      f.puts "  public static void Main(string[] args)"
+      f.puts "  {"
+      f.puts "    FileStream fs = File.OpenWrite(\"#{filebasename}.txt\");"
+      f.puts code.children.at("cswrite").text
+      f.puts "    fs.SetLength(fs.Position);"
+      f.puts "    fs.Close();"
+      f.puts "  }"
+      f.puts "}";
+    end
   end
-  f.puts "public class MainClass"
-  f.puts "{";
-  f.puts "  public static void Main(string[] args)"
-  f.puts "  {"
-  f.puts "    FileStream fs = File.OpenWrite(\"#{filebasename}.txt\");"
-  f.puts code.children.at("cswrite").text
-  f.puts "    fs.SetLength(fs.Position);"
-  f.puts "    fs.Close();"
-  f.puts "  }"
-  f.puts "}";
-end
-end
 
-if check(file, out + "_read.cs")
-File.open(out + "_read.cs", "w") do |f|
-  f.puts "#define DEBUG"
-  f.puts "using System;"
-  f.puts "using System.IO;"
-  f.puts "using System.Collections.Generic;"
-  f.puts "using System.Diagnostics;"
-  f.puts "using Qutter;"
-  f.puts
-  if not code.children.at("cscommon").nil?
-    f.puts code.children.at("cscommon").text
-    f.puts
+  if check(file, out + "_read.cs")
+    File.open(out + "_read.cs", "w") do |f|
+      f.puts "#define DEBUG"
+      f.puts "using System;"
+      f.puts "using System.IO;"
+      f.puts "using System.Collections.Generic;"
+      f.puts "using System.Diagnostics;"
+      f.puts "using Qutter;"
+      f.puts
+      if not code.children.at("cscommon").nil?
+        f.puts code.children.at("cscommon").text
+        f.puts
+      end
+      f.puts "public class MainClass"
+      f.puts "{";
+      f.puts "  public static void Main(string[] args)"
+      f.puts "  {"
+      f.puts "    FileStream fs = File.OpenRead(\"#{filebasename}.txt\");"
+      f.puts "    Trace.Listeners.Add(new ConsoleTraceListener());"
+      f.puts code.children.at("csread").text
+      f.puts "    fs.Close();"
+      f.puts "  }"
+      f.puts "}";
+    end
   end
-  f.puts "public class MainClass"
-  f.puts "{";
-  f.puts "  public static void Main(string[] args)"
-  f.puts "  {"
-  f.puts "    FileStream fs = File.OpenRead(\"#{filebasename}.txt\");"
-  f.puts "    Trace.Listeners.Add(new ConsoleTraceListener());"
-  f.puts code.children.at("csread").text
-  f.puts "    fs.Close();"
-  f.puts "  }"
-  f.puts "}";
-end
-end
 
-
-File.open("test", "w+") do |f|
-  f.puts(filebasename + "_read")
-  f.puts(filebasename + "_write")
-  f.puts("mono " + filebasename + "_read.exe")
-  f.puts("mono " + filebasename + "_write.exe")
-end
-
+  File.open("test", "w+") do |f|
+    f.puts(filebasename + "_read")
+    f.puts(filebasename + "_write")
+    f.puts("mono " + filebasename + "_read.exe")
+    f.puts("mono " + filebasename + "_write.exe")
+  end
 end
 
 Dir["tests/*.xml"].each do |file|
