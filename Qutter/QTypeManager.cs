@@ -84,7 +84,7 @@ namespace Qutter
 			}
 			return metaTypes[type];
 		}
-		
+
 		internal static Type GetMetaTypeSerializer(Type type)
 		{
 			if (userTypes.ContainsKey(type)) {
@@ -100,7 +100,7 @@ namespace Qutter
 			} else {
 				Type genericType = type.GetGenericTypeDefinition();
 				Type serializer = typeDict[genericType];
-	
+
 				if (serializer == null) {
 					return null;
 				}
@@ -122,12 +122,12 @@ namespace Qutter
 
 			return userDefined[name];
 		}
-		
+
 		internal static object GetMetaTypeSerializerInstance(string name)
 		{
 			return GetMetaTypeSerializer(name).GetConstructor(new Type[] { }).Invoke(new object[] { });
 		}
-		
+
 		internal static Type GetMetaTypeSerializer(QMetaType type)
 		{
 			if (metaTypes.ContainsKey(type)) {
@@ -136,18 +136,18 @@ namespace Qutter
 				return null;
 			}
 		}
-		
+
 		private static Type GetMetaTypeSerializer(int type)
 		{
-		return GetMetaTypeSerializer((QMetaType)type);
+			return GetMetaTypeSerializer((QMetaType)type);
 		}
-		
+
 		public static object Invoke(string type, string method, object[] data)
 		{
 			var o = GetMetaTypeSerializer(type).GetConstructor(new Type[] { }).Invoke(new object[] { });
 			return o.GetType().GetMethod(method).Invoke(o, data);
 		}
-		
+
 		public static object Invoke(Type type, string method, object[] data)
 		{
 			if (type.IsGenericType) {

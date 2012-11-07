@@ -20,7 +20,7 @@ namespace Qutter
 		}
 
 		public QVariant(Type type)
-		: this(null, QTypeManager.GetType(type))
+			: this(null, QTypeManager.GetType(type))
 		{
 		}
 

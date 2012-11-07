@@ -30,5 +30,6 @@ namespace Qutter
 		UserType = 127,
 
 		UShort = 133,
-	}}
+	}
+}
 
