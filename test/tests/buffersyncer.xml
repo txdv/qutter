@@ -1,5 +1,5 @@
 <code>
-<cinclude><![CDATA[#include<QVariantList>
+<cinclude><![CDATA[#include <QVariantList>
 #include <QVariant>
 #include <iostream>
 #include<QString>]]></cinclude>

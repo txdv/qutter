@@ -1,5 +1,5 @@
 <code>
-<cinclude><![CDATA[#include<QMap>]]></cinclude>
+<cinclude><![CDATA[#include <QMap>]]></cinclude>
 <cwrite><![CDATA[
   QMap<int, QMap<int, int> > m = QMap<int, QMap<int, int> >();
 
