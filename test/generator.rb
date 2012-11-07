@@ -108,13 +108,6 @@ def generate(file)
       f.puts "}";
     end
   end
-
-  File.open("test", "w+") do |f|
-    f.puts(filebasename + "_read")
-    f.puts(filebasename + "_write")
-    f.puts("mono " + filebasename + "_read.exe")
-    f.puts("mono " + filebasename + "_write.exe")
-  end
 end
 
 Dir["tests/*.xml"].each do |file|
@@ -122,7 +115,6 @@ Dir["tests/*.xml"].each do |file|
   generate(file)
 end
 
-File.delete("test")
 puts "Generating Makefile"
 File.open("output/Makefile", "w+") do |test|
   files = [ ]
