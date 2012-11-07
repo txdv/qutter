@@ -21,15 +21,15 @@ provided with this library.
 
 > Qt Object        - .NET Object
 > -----------------------------------------------
->  1. bool         - bool
->  2. int          - int
->  3. uint         - uint
->  4. QChar        - char
->  5. QVariantMap  - Dictionary<string, QVariant>
->  6. QVariantList - List<QVariant>
->  7. QString      - string
->  8. QStringList  - List<string>
->  9. QByteArray   - byte[]
+> 1.  bool         - bool
+> 2.  int          - int
+> 3.  uint         - uint
+> 4.  QChar        - char
+> 5.  QVariantMap  - Dictionary<string, QVariant>
+> 6.  QVariantList - List<QVariant>
+> 7.  QString      - string
+> 8.  QStringList  - List<string>
+> 9.  QByteArray   - byte[]
 > 10. QDate        - DateTime
 > 11. QTime        - TimeSpan
 > 12. QVariant     - QVariant
