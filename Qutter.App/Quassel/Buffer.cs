@@ -168,7 +168,7 @@ namespace Qutter.App
 
 		public event Action<Buffer, IrcMessage> Message;
 
-		Buffer Get(int id)
+		internal Buffer Get(int id)
 		{
 			if (Count == 0) {
 				return null;

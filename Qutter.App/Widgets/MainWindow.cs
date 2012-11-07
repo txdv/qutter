@@ -31,6 +31,9 @@ namespace Qutter.App
 
 				if (text.StartsWith("/exit")) {
 					Application.Exit = true;
+				} else if (text.StartsWith("/r")) {
+					Client.RequestBacklog(Client.BufferSyncer.Active.BufferInfo.Id);
+					return;
 				}
 
 				Client.BufferSyncer.Active.Send(text);

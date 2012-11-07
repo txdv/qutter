@@ -62,6 +62,7 @@
     <Compile Include="ActiveList.cs" />
     <Compile Include="Themes\Default.cs" />
     <Compile Include="Themes\Mono.cs" />
+    <Compile Include="Quassel\AsyncCoreConnection.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Qutter\Qutter.csproj">
